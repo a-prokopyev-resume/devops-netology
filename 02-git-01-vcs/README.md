@@ -1,5 +1,8 @@
 # Домашнее задание к занятию «Системы контроля версий»
 
+# [Домашнее задание](https://github.com/a-prokopyev-resume/sysadm-homeworks/tree/devsys10/02-git-01-vcs) к занятию [«Введение в DevOps»](https://netology.ru/profile/program/git-dev-27/lessons/241716/lesson_items/1283972)
+
+
 ### Цель задания
 
 В результате выполнения задания вы: 

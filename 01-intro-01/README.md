@@ -1,6 +1,6 @@
 Задание выполнил студент Нетологии курса DevOps-27: Прокопьев Александр.
 
-# Домашнее задание к занятию «Введение в DevOps»
+# [Домашнее задание](https://github.com/a-prokopyev-resume/sysadm-homeworks/tree/devsys10/01-intro-01) к занятию [«Введение в DevOps»](https://netology.ru/profile/program/git-dev-27/lessons/241715/lesson_items/1283967)
 
 ### Цель задания
 
