@@ -44,12 +44,15 @@
 7. *_override.tf -- игнорировать все файлы, имя которых заканчивается строкой "_override.tf"
 8. *_override.tf.json -- игнорировать все файлы, имя которых заканчивается строкой "_override.tf.json"
 9. .terraformrc -- игнорировать скрытый файл ".terraformrc"
-10. terraform.rc -- игнорировать скрытый файл "terraform.rc"
+10. terraform.rc -- игнорировать файл "terraform.rc"
 
 Выполнение остальных шагов данной задачи видно в логе изменений репозитория git.
 И еще скриншот:
 
 ![git_ssh_smartcard_auth](img/git_commits.jpg)
+
+Замечание: лучше было бы использовать `git add --all`:
+https://stackoverflow.com/questions/572549/difference-between-git-add-a-and-git-add
 
 ## Задание 2. Знакомство с документаций
 
@@ -75,7 +78,19 @@
   - Pre-commit и post-commit hooks предназначены для обработки событий перед и после коммита для кастомных автоматизаций позволяющих настроить тестирование и оповещение.
   - Изменение последнего коммита без создания нового коммита: git commit --amend
 
-Настроил работу git push через ssh с использованием аппаратного крипто на смарткарте, фрагмент конфига для ssh клиента: 
+### Полезные ссылки:
+  * [Common commands](https://selectel.ru/blog/tutorials/git-setup-and-common-commands/)    
+  * [Push & commit](https://stackoverflow.com/questions/6143285/git-add-vs-push-vs-commit/74632221#74632221)
+  * [Personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+  * [Git push via ssh](https://github.com/JinnaBalu/GitCheatSheet/blob/master/use-cases/git-push-with-ssh.md)
+  * [GIT Book](https://git-scm.com/book/ru/v2/%D0%9E%D1%81%D0%BD%D0%BE%D0%B2%D1%8B-Git-%D0%97%D0%B0%D0%BF%D0%B8%D1%81%D1%8C-%D0%B8%D0%B7%D0%BC%D0%B5%D0%BD%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B2-%D1%80%D0%B5%D0%BF%D0%BE%D0%B7%D0%B8%D1%82%D0%BE%D1%80%D0%B8%D0%B9)
+  * [How to undo](https://stackoverflow.com/questions/348170/how-do-i-undo-git-add-before-commit)
+  * [How to undo almost anything](https://github.blog/2015-06-08-how-to-undo-almost-anything-with-git/)
+  * [How to remove a commit on Github](https://stackoverflow.com/questions/448919/how-can-i-remove-a-commit-on-github)
+
+### Настроил работу git push через ssh с использованием аппаратного крипто на смарткарте:
+
+Фрагмент конфига для ssh клиента: 
     
     Host gh github github.com
         Hostname github.com
@@ -85,8 +100,33 @@
         CompressionLevel 9
         PKCS11Provider /secret_path_xxx/pkcs11_xxx.so
 
+Содержимое скрипта настройки git: `cat config_git.sh`:
+    
+    cd /projects/Netology/DevOps27/Homework;
+    git config --global user.name "Alexander Prokopyev";
+    git config --global user.email "a.prokopyev.resume@gmail.com";
+    #
+    #Save old origin: 
+    #  remote.origin.url=https://github.com/a-prokopyev-resume/devops-netology
+    #Convert HTTPS origin to SSH one:
+    #  echo $(git remote show origin | grep "Fetch URL" | sed 's/ *Fetch URL: //' | sed 's/https:\/\/github.com\//git@github.com:/')
+    git remote set-url origin git@github.com:a-prokopyev-resume/devops-netology;
+    #    
+    git config -l;
+
+Вывод команды `git config -l` после запуска конфигурационного скрипта:
+
+    user.name=Alexander Prokopyev
+    user.email=a.prokopyev.resume@gmail.com
+    core.repositoryformatversion=0
+    core.filemode=true
+    core.bare=false
+    core.logallrefupdates=true
+    remote.origin.url=git@github.com:a-prokopyev-resume/devops-netology
+    remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+    branch.main.remote=origin
+    branch.main.merge=refs/heads/main
+
 Пример логина с использованием смарткарты для аутентификации:
 
 ![git_ssh_smartcard_auth](img/git_ssh_smartcard_auth.jpg)
-
-
