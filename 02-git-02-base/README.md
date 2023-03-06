@@ -102,7 +102,7 @@ Bitbucket не позволяет добавлять ключ WebAuthn U2F к с
     cd /projects/Netology/DevOps27/Homework;
     git push -u origin main;
     git push -u gl main;
-    git push -u bb main;
+    git push -u bb main; 
 
 Каталог /projects/Netology/DevOps27/Homework/utils добавлен в файл .gitignore
 
