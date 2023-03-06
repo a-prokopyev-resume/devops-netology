@@ -89,10 +89,25 @@ Bitbucket не позволяет добавлять ключ WebAuthn U2F к с
      * [new branch]      main -> main
     Branch 'main' set up to track remote branch 'main' from 'bb'.
 ```
-
 Настроил публичную видимость репозиториев для ознакомления проверяющего преподавателя с результатом решения задания:
  * https://gitlab.com/a-prokopyev-resume/devops-netology
  * https://bitbucket.org/a-prokopyev-resume/devops-netology
+
+Сделал скрипт для отправки изменений сразу во все репозитории:
+
+    root@workstation /projects/Netology/DevOps27/Homework > cat utils/push_to_all.sh
+
+    source /utils/ssh/sc/agent.sh;
+    ssh _agent etoken add;
+    cd /projects/Netology/DevOps27/Homework;
+    git push;
+    git push -u gl main;
+    git push -u bb main;
+
+Каталог /projects/Netology/DevOps27/Homework/utils добавлен в файл .gitignore
+
+Результат выполнения скрипта видно на скриншоте:
+
 
 ## Решение задания 2. Теги
 
