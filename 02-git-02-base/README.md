@@ -107,6 +107,7 @@ Bitbucket не позволяет добавлять ключ WebAuthn U2F к с
 Каталог /projects/Netology/DevOps27/Homework/utils добавлен в файл .gitignore
 
 Результат выполнения скрипта видно на скриншоте:
+![push_to_all.sh](img/push_to_all.jpg)
 
 
 ## Решение задания 2. Теги
