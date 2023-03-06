@@ -176,17 +176,33 @@ Bitbucket не позволяет добавлять ключ WebAuthn U2F к с
 
 ## Решение задания 3. Ветки 
 
-Давайте посмотрим, как будет выглядеть история коммитов при создании веток. 
+История набранных мной команд для решения этой задачи:
+```    
+    git branch --set-upstream-to origin/main main
+    git status
+    git commit -a -m "02-git-02-base - task 2 done"
+    git log -S "delete"
+    git checkout 07fd3e791491c26232b7784ca55ffccdcff0422e
+    git checkout -b fix
+    cd ..
+    git checkout -b fix
+    git push -u origin fix
+    echo "Hello from the fix!" >> README.md 
+    git commit -a -m "02-git-02-base - task 3: line changed"
+    git push -u origin 
+    git log
+    git checkout main
+    git log
+    git status
+    cd 02-git-02-base/img/
+    mv /download/Screenshot\ 2023-03-06\ at\ 13-25-41\ Network\ Graph\ ·\ a-prokopyev-resume\ devops-netology.png before_fix.png
+    mv /download/Screenshot\ 2023-03-06\ at\ 13-26-15\ Network\ Graph\ ·\ a-prokopyev-resume\ devops-netology\ ·\ GitHub.png after_fix.png
+```  
 
-1. Переключитесь обратно на ветку `main`, которая должна быть связана с веткой `main` репозитория на `github`.
-1. Посмотрите лог коммитов и найдите хеш коммита с названием `Prepare to delete and move`, который был создан в пределах предыдущего домашнего задания. 
-1. Выполните `git checkout` по хешу найденного коммита. 
-1. Создайте новую ветку `fix`, базируясь на этом коммите `git switch -c fix`.
-1. Отправьте новую ветку в репозиторий на GitHub `git push -u origin fix`.
-1. Посмотрите, как визуально выглядит ваша схема коммитов: https://github.com/YOUR_ACCOUNT/devops-netology/network. 
-1. Теперь измените содержание файла `README.md`, добавив новую строчку.
-1. Отправьте изменения в репозиторий и посмотрите, как изменится схема на странице https://github.com/YOUR_ACCOUNT/devops-netology/network 
-и как изменится вывод команды `git log`.
+Результат видим на скриншотах:
+
+![before_fix.png](img/before_fix.png)
+![after_fix.png](img/after_fix.png)
 
 ## Решение задания 4. Упрощаем себе жизнь
 
