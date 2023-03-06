@@ -100,7 +100,7 @@ Bitbucket не позволяет добавлять ключ WebAuthn U2F к с
     source /utils/ssh/sc/agent.sh;
     ssh _agent etoken add;
     cd /projects/Netology/DevOps27/Homework;
-    git push;
+    git push -u origin main;
     git push -u gl main;
     git push -u bb main;
 
