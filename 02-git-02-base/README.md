@@ -112,15 +112,67 @@ Bitbucket не позволяет добавлять ключ WebAuthn U2F к с
 
 ## Решение задания 2. Теги
 
-Представьте ситуацию, когда в коде была обнаружена ошибка — надо вернуться на предыдущую версию кода,
-исправить её и выложить исправленный код в продакшн. Мы никуда не будем выкладывать код, но пометим некоторые коммиты тегами и создадим от них ветки. 
+Находим в логе hash HEAD:
+```12:44 root@workstation /projects/Netology/DevOps27/Homework > git log --oneline
+   8a46b73 (HEAD -> main, origin/main, origin/HEAD, gl/main, bb/main) 02-git-02-base - task 1 done                                                                                             
+   2967b9a 02-git-02-base - task 1 done                                                                                                                                                        
+   8baceb3 02-git-02-base - task 1 done                                                                                                                                                        
+   779da77 02-git-02-base - task 1 done                                                                                                                                                        
+   3322646 02-git-02-base - task 1 done                                                                                                                                                        
+   f3be1e6 02-git-02-base - task 1 done
+   eb2f815 02-git-02-base - task 1 only
+   4a9377f Links to full homework tasks
+   1d6980b Links to full homework tasks
+   568e2fb Links to full homework tasks
+   09f9920 Links to full homework tasks
+   8ed020c 02-git-01-vcs - Links added
+   8ec0fec 02-git-01-vcs - Additional screenshot
+   b47627d 02-git-01-vcs - Moved and deleted
+```
 
-1. Создайте легковестный тег `v0.0` на HEAD-коммите и запуште его во все три добавленных на предыдущем этапе `upstream`.
-1. Аналогично создайте аннотированный тег `v0.1`.
-1. Перейдите на страницу просмотра тегов в GitHab (и в других репозиториях) и посмотрите, чем отличаются созданные теги. 
-    * в GitHub — https://github.com/YOUR_ACCOUNT/devops-netology/releases;
-    * в GitLab — https://gitlab.com/YOUR_ACCOUNT/devops-netology/-/tags;
-    * в Bitbucket — список тегов расположен в выпадающем меню веток на отдельной вкладке. 
+Создаем тэги:
+```
+   12:45 root@workstation /projects/Netology/DevOps27/Homework > git tag v0.0 8a46b73
+   12:45 root@workstation /projects/Netology/DevOps27/Homework > git tag -a v0.1 8a46b73
+```
+
+Отправляем созданные тэги во все подключенные репозитории:
+```
+   12:46 root@workstation /projects/Netology/DevOps27/Homework > git push origin --tags
+   Enter PIN for 'EToken_SC': 
+   Enumerating objects: 1, done.
+   Counting objects: 100% (1/1), done.
+   Writing objects: 100% (1/1), 170 bytes | 170.00 KiB/s, done.
+   Total 1 (delta 0), reused 0 (delta 0)
+   To github.com:a-prokopyev-resume/devops-netology
+    * [new tag]         v0.0 -> v0.0
+    * [new tag]         v0.1 -> v0.1
+
+   12:47 root@workstation /projects/Netology/DevOps27/Homework > git push gl --tags
+   Enter PIN for 'EToken_SC':                                                                                                                                                                  
+   Enumerating objects: 1, done.                                                                                                                                                               
+   Counting objects: 100% (1/1), done.                                                                                                                                                         
+   Writing objects: 100% (1/1), 170 bytes | 170.00 KiB/s, done.                                                                                                                                
+   Total 1 (delta 0), reused 0 (delta 0)                                                                                                                                                       
+   To gl:a-prokopyev-resume/devops-netology                                                                                                                                                    
+    * [new tag]         v0.0 -> v0.0                                                                                                                                                           
+    * [new tag]         v0.1 -> v0.1                                                                                                                                                           
+   
+   12:47 root@workstation /projects/Netology/DevOps27/Homework > git push bb --tags                                                                                                          
+   Enter PIN for 'EToken_SC':                                                                                                                                                                  
+   Enumerating objects: 1, done.                                                                                                                                                               
+   Counting objects: 100% (1/1), done.
+   Writing objects: 100% (1/1), 170 bytes | 170.00 KiB/s, done.
+   Total 1 (delta 0), reused 0 (delta 0)
+   To bb:a-prokopyev-resume/devops-netology
+    * [new tag]         v0.0 -> v0.0                                                                                                                                                           
+    * [new tag]         v0.1 -> v0.1 
+```
+Скриншоты созданных тэгов на соответствующих сервисах:
+
+![github_tags.png](img/github_tags.png)
+![gitlab_tags.png](img/gitlab_tags.png)
+![bitbucket_tags.png](img/bitbucket_tags.png)
 
 ## Решение задания 3. Ветки 
 
