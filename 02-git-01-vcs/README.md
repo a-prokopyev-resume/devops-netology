@@ -67,15 +67,20 @@ https://stackoverflow.com/questions/572549/difference-between-git-add-a-and-git-
   - Изменение последнего коммита без создания нового коммита: git commit --amend
 
 ### Полезные ссылки:
-  * [Common commands](https://selectel.ru/blog/tutorials/git-setup-and-common-commands/)    
-  * [Push & commit](https://stackoverflow.com/questions/6143285/git-add-vs-push-vs-commit/74632221#74632221)
-  * [Personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
-  * [Git push via ssh](https://github.com/JinnaBalu/GitCheatSheet/blob/master/use-cases/git-push-with-ssh.md)
-  * [GIT Book](https://git-scm.com/book/ru/v2/%D0%9E%D1%81%D0%BD%D0%BE%D0%B2%D1%8B-Git-%D0%97%D0%B0%D0%BF%D0%B8%D1%81%D1%8C-%D0%B8%D0%B7%D0%BC%D0%B5%D0%BD%D0%B5%D0%BD%D0%B8%D0%B9-%D0%B2-%D1%80%D0%B5%D0%BF%D0%BE%D0%B7%D0%B8%D1%82%D0%BE%D1%80%D0%B8%D0%B9)
-  * [How to undo](https://stackoverflow.com/questions/348170/how-do-i-undo-git-add-before-commit)
-  * [How to undo almost anything](https://github.blog/2015-06-08-how-to-undo-almost-anything-with-git/)
-  * [How to remove a commit on Github](https://stackoverflow.com/questions/448919/how-can-i-remove-a-commit-on-github)
-
+  * Often Used Commands:
+    * [GitLab Git Cheat Sheet](https://about.gitlab.com/images/press/git-cheat-sheet.pdf)
+    * [Selectel](https://selectel.ru/blog/tutorials/git-setup-and-common-commands/)     
+    * [Push & commit](https://stackoverflow.com/questions/6143285/git-add-vs-push-vs-commit/74632221#74632221)
+  * Authentication:
+    * [Personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+    * [Git push via ssh](https://github.com/JinnaBalu/GitCheatSheet/blob/master/use-cases/git-push-with-ssh.md)
+  * Undo methods:
+    * [How to undo](https://stackoverflow.com/questions/348170/how-do-i-undo-git-add-before-commit)
+    * [How to undo almost anything](https://github.blog/2015-06-08-how-to-undo-almost-anything-with-git/)
+    * [How to remove a commit on Github](https://stackoverflow.com/questions/448919/how-can-i-remove-a-commit-on-github)
+  * Books:
+    * [GIT Book](https://git-scm.com/book/ru/v2)
+     
 ### Настроил работу git push через ssh с использованием аппаратного крипто на смарткарте:
 
 Фрагмент конфига для ssh клиента: 

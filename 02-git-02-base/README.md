@@ -13,8 +13,6 @@
 
 ## Решение Задания 1. Знакомимся с GitLab и Bitbucket 
 
-### GitLab
-
 Создал учетные записи:
  * GitLab: https://gitlab.com/a-prokopyev-resume
  * Bitbucket: https://bitbucket.org/a-prokopyev-resume/
@@ -27,24 +25,70 @@ Bitbucket не позволяет добавлять ключ WebAuthn U2F к с
 Хуже всего с безопасностью в РФ обстоят дела при использовании новых учетных записей Github, потому что Github не работает через SSO аутентификацию учеткой Gmail, а для включения дополнительной аутентификации со встроенной в Github поддержкой WebAuthn U2F требуется сначала пройти проверку телефонного номера, отличного от +7.
 Поэтому новые учетные записи Github являются наименее защищенными для пользователей из РФ.
 
-Добавил remote для работы по протоколам SSH и HTTPS с новыми репозиториями:
+На своем компьютере для работы с удаленными Git репозиториями я использую только SSH, поэтому добавлял только соответствующие remotes:
 
-    bitbucket   git@bitbucket.org:a-prokopyev-resume/devops-netology.git (fetch)
-    bitbucket	git@bitbucket.org:a-prokopyev-resume/devops-netology.git (push)
-    bitbucket-https	https://a-prokopyev-resume@bitbucket.org/andreyborue/devops-netology.git (fetch)
-    bitbucket-https	https://a-prokopyev-resume@bitbucket.org/andreyborue/devops-netology.git (push)
-    gitlab	git@gitlab.com:a-prokopyev-resume/devops-netology.git (fetch)
-    gitlab	git@gitlab.com:a-prokopyev-resume/devops-netology.git (push)
-    gitlab-https	https://gitlab.com/a-prokopyev-resume/devops-netology.git (fetch)
-    gitlab-https	https://gitlab.com/a-prokopyev-resume/devops-netology.git (push)
-    
-Для origin репозитория Github у меня используется только SSH:
-    
-    origin  git@github.com:a-prokopyev-resume/devops-netology (fetch)                                                                                                                                                
+    git remote add gl git@gl:a-prokopyev-resume/devops-netology
+    git remote add bb git@bb:a-prokopyev-resume/devops-netology
+
+Файл .ssh/config у меня выглядит следующим образом:
+``` 
+    Host github.com github gh       gitlab.com gitlab gl    bitbucket.org bitbucket bb
+           User git
+   #       User a-prokopyev-resume
+           Compression yes
+           CompressionLevel 9
+           PKCS11Provider /xxx/pkcs11_xxx.so
+
+    Host github.com github gh
+           Hostname github.com
+   
+    Host gitlab.com gitlab gl
+           Hostname gitlab.com
+   
+    Host bitbucket.org bitbucket bb
+           Hostname bitbucket.org
+```
+Поэтому полностью имена хостов при использовании ssh писать необязательно, достаточно указывать короткие имена хостов. 
+Причем прописывать их в /etc/hosts в таком случае тоже ненужно, если использование ограничено только ssh библиотеками.
+
+Команда `git remote -v` выводит у меня следующее:
+
+    bb      git@bb:a-prokopyev-resume/devops-netology (fetch)
+    bb      git@bb:a-prokopyev-resume/devops-netology (push)
+    gl      git@gl:a-prokopyev-resume/devops-netology (fetch)
+    gl      git@gl:a-prokopyev-resume/devops-netology (push)
+    origin  git@github.com:a-prokopyev-resume/devops-netology (fetch)
     origin  git@github.com:a-prokopyev-resume/devops-netology (push)
+    
+Для origin репозитория Github у меня осталось длинное имя хоста: `github.com`
 
-Выполнил push локальной ветки main в новые репозитории командами: 
-   `git push -u gitlab main` и `git push -u bitbucket main` 
+Выполнил push локальной ветки main в новые репозитории: 
+```
+    git push -u gl main 
+    Enter PIN for 'EToken_SC': 
+    Enumerating objects: 74, done.
+    Counting objects: 100% (74/74), done.
+    Delta compression using up to 4 threads
+    Compressing objects: 100% (68/68), done.
+    Writing objects: 100% (74/74), 1.15 MiB | 15.23 MiB/s, done.
+    Total 74 (delta 19), reused 0 (delta 0)
+    To gitlab.com:a-prokopyev-resume/devops-netology
+     * [new branch]      main -> main
+    Branch 'main' set up to track remote branch 'main' from 'gl'.
+
+    git push -u bb main
+    Warning: Permanently added the RSA host key for IP address '18.234.32.155' to the list of known hosts.
+    Enter PIN for 'EToken_SC': 
+    Enumerating objects: 74, done.
+    Counting objects: 100% (74/74), done.
+    Delta compression using up to 4 threads
+    Compressing objects: 100% (68/68), done.
+    Writing objects: 100% (74/74), 1.15 MiB | 15.43 MiB/s, done.
+    Total 74 (delta 19), reused 0 (delta 0)
+    To bitbucket.org:a-prokopyev-resume/devops-netology
+     * [new branch]      main -> main
+    Branch 'main' set up to track remote branch 'main' from 'bb'.
+```
 
 Настроил публичную видимость репозиториев для ознакомления проверяющего преподавателя с результатом решения задания:
  * https://gitlab.com/a-prokopyev-resume/devops-netology
