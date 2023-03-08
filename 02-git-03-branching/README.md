@@ -1,4 +1,5 @@
-# [Домашнее задание](https://github.com/a-prokopyev-resume/sysadm-homeworks/tree/devsys10/02-git-02-branching) к занятию [«Ветвления в Git»](https://netology.ru/profile/program/git-dev-27/lessons/241717/lesson_items/1283980)
+# [Домашнее задание](https://github.com/a-prokopyev-resume/sysadm-homeworks/tree/devsys10/02-git-02-branching) к занятию [«Ветвления в Git»](https://netology.ru/profile/program/git-dev-27/lessons/241718/lesson_items/1283986)
+
 
 ### Цель задания
 
