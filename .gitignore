@@ -2,3 +2,6 @@
 *~
 /utils
 /.idea
+#README.md
+/Stash
+/**/.gitignore
