@@ -55,6 +55,7 @@
 
 Возвращаюсь на commit "02-git-03-branching - prepare for merge and rebase" и опять меняю файл rebase.sh:
 ```commandline
+    git log # ищу "prepare for merge and rebase", можно опцией -S
     git checkout cd352894f0c6efd56bf7e5f702aa84c487bda6eb
     git checkout -b git-rebase
     joe rebase.sh
@@ -114,11 +115,13 @@
 Диаграмма ветвления после второго merge:
 ![Диаграмма ветвления на Github](img/network4_after_merge2.png)
 
+Последний merge почему-то прошел не с помощью fast-forward и диаграмма получилась достаточно сложная вместо упрощения.
+
 Для того чтобы в процессе выполнения задания файл README.MD, в который я постоянно вносил изменения по ходу работы, не менялся, 
 я указывал README.MD и каталог img в локальном файле .gitignore, который теперь можно удалить:
 ```commandline
     rm /home/alex/Homework/02-git-03-branching/.gitignore
-    git -a -m "Adding homework MD file with immages"
+    git -a -m "Adding homework MD file with images"
     git push
 ```
 Теперь результат выполнения работы видел в репозитории на Github по адресу: https://github.com/a-prokopyev-resume/devops-netology/tree/main/02-git-03-branching
