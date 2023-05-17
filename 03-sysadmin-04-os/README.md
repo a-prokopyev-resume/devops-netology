@@ -28,12 +28,13 @@
     * предусмотрите возможность добавления опций к запускаемому процессу через внешний файл (посмотрите, например, на `systemctl cat cron`);
     * удостоверьтесь, что с помощью systemctl процесс корректно стартует, завершается, а после перезагрузки автоматически поднимается.
 
-systemctl cat prometheus-node-exporter.service
+Решение:
+systemctl cat node-exporter.service
 ```
 useradd node_exporter -s /sbin/nologin;
 joe  /etc/systemd/system/node-exporter.service
 ```
-
+Новый systemd Unit:
 ```
 [Unit]
 Description=Node Exporter
@@ -50,7 +51,6 @@ SendSIGKILL=no
 [Install]
 WantedBy=multi-user.target
 ```
-
 Запускаем новый сервис:
 ```
 systemctl daemon-reload;
@@ -80,7 +80,6 @@ root@focal-base:/etc/systemd/system# ps aux | grep node
 node_ex+  6624  0.0  0.5 410676  5912 ?        Ssl  04:43   0:00 /usr/bin/prometheus-node-exporter
 root      6632  0.0  0.0  11784   556 pts/4    S+   04:44   0:00 grep --color=auto node
 ```
-
 Останавливаем:
 ```
 root@focal-base:/etc/systemd/system# systemctl stop node-exporter
@@ -113,7 +112,7 @@ joe /etc/default/node-exporter
 head /etc/default/node-exporter -n 1
 Options="--collector.cpu --collector.diskstats --collector.netstat --collector.meminfo"
 ```
-Запускаем `curl` для получения страницы по адресу `http://127.0.0.1:9100/metrics`:
+Запускаем `curl` для получения страницы по адресу `http://127.0.0.1:9100/metrics`:    
 `root@focal-base:/# curl http://127.0.0.1:9100/metrics | grep -i -E "cpu|diskstats|netstat|meminfo"`
 
 Получаем следующий вывод: [Task2](task2.md)
@@ -122,6 +121,8 @@ Options="--collector.cpu --collector.diskstats --collector.netstat --collector.m
    После успешной установки:
     * в конфигурационном файле `/etc/netdata/netdata.conf` в секции [web] замените значение с localhost на `bind to = 0.0.0.0`;
     * добавьте в Vagrantfile проброс порта Netdata на свой локальный компьютер и сделайте `vagrant reload`:
+
+Решение:
 ```
   config.vm.network "forwarded_port", guest: 19999, host: 19999
 ```
@@ -205,7 +206,7 @@ virtio_scsi
 
 5. Как настроен sysctl `fs.nr_open` на системе по умолчанию? Определите, что означает этот параметр. Какой другой существующий лимит не позволит достичь такого числа (`ulimit --help`)?
 
-Почитал:  
+Решение: почитал:  
 https://sysadminium.ru/adm-serv-linux-limit-open-files-sysctl/  
 https://ru.stackoverflow.com/questions/475417/
 
@@ -248,6 +249,7 @@ sleep(1)
 
 7. Найдите информацию о том, что такое `:(){ :|:& };:`. 
 
+Решение:  
 Судя по https://www.cyberciti.biz/faq/understanding-bash-fork-bomb/ , это так называемая "shell fork bomb" - разновидность DDOS атаки на *nix like систему.
 По сути это не что иное как Bash функция, которую можно следующим образом разложить на ее составные части:
 ```bash

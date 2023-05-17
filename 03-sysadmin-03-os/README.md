@@ -145,83 +145,8 @@ false; echo $?
 ```
 с другой стороны это ошибка из-за ненулевого кода возврата выражения в целом.
 
-Следующий скрипт может продемонстрировать ленивое вычисление логических операций в Bash:
-
-```
-#===== The beginning of the Copyright Notice =====
-copyright()
-{
-
-echo -e "
-'============================== The Beginning of the Copyright Notice ==========================================================
-' The AUTHOR of this file is Alexander Borisovich Prokopyev born on December 20, 1977 resident of the city of Kurgan, Russia;
-' Series and Russian passport number (only the last two digits for each one): **22-****91
-' Russian Individual Taxpayer Number of the AUTHOR (only the last four digits): ********2007
-' Russian Insurance Number of Individual Ledger Account of the AUTHOR (only the last five digits): ***-***-859 04
-' Copyright (C) Alexander B. Prokopyev, 2023, All Rights Reserved.
-' Contact:      a.prokopyev.resume at gmail dot com
-'
-' All source code contained in this file is protected by copyright law.
-' This file is available under AGPL v3 (GNU Affero General Public License): https://www.gnu.org/licenses/agpl-3.0.en.html
-' PROVIDED FOLLOWING RESTRICTIONS APPLY:
-' Nobody except the AUTHOR may alter or remove this copyright notice from any legal copies of this file content.
-' Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
-' \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
-' specific language governing permissions and limitations under the License.
-'
-' ATTENTION: If your country laws are not compatible or collide with this license terms you are prohibited to use this content.
-'================================= The End of the Copyright Notice =============================================================
-";
-
-}
-
-CallCount=0;
-
-operand()
-{
-        Position=$1;
-        Type=$2;
-        echo -ne "$Position $Type called. \t";
-        (( CallCount++ ));
-        case $Type in
-                ( "false" )
-                        return 1;
-                ;;
-                ( "true" )
-                        return 0;
-                ;;
-                (*)
-                        echo "Incorrect operand type!";
-                        exit 2;
-                ;;
-        esac;
-}
-
-operation()
-{
-        Op=$1
-        V1=$2;
-        V2=$3;
-        CallCount=0;
-        echo -ne "===>: $V1 $Op $V2: \t  ";
-        eval operand "left $V1" $Op operand "right $V2"; Result=$?; if [ $CallCount == 1 ]; then echo -ne "\t\t\t"; fi; echo -n "Exit code: $Result";
-        echo;
-}
-
-test_matrix()
-{
-        Op=$1;
-        operation $Op "false" "false";
-        operation $Op "false" "true";
-        operation $Op "true" "false";
-        operation $Op "true" "true";
-}
-
-test_matrix "||";
-test_matrix "&&";
-```
-
-Его запуск выводит следующее:
+Скрипт [test_logic.sh](test_logic.sh) может продемонстрировать ленивое вычисление логических операций в Bash,
+его запуск выдает следующие результаты:
 ```
 ===>: false || false:     left false called.    right false called.     Exit code: 1
 ===>: false || true:      left false called.    right true called.      Exit code: 0
@@ -281,44 +206,27 @@ bash -lc "set -e; true; echo Second Command" # А в данном случае �
 Second Command 
 ```
 
-И не прерывает команды после цепочки команд, объединенных логическими операторами `||` и `&&`.
+И не прерывает команды после цепочки команд, объединенных логическими операторами `||` и `&&` кроме случаев, 
+когда ошибка возникла при выполнении последней команды в такой цепочке, но только при условии, что она была выполнена с учетом ленивого вычисления. 
 
 Пример для оператора логического "ИЛИ" (`||`):
 ```
 bash -lc "set -e; false || false; echo 'Execution continued'" # <===
-# Почему прервалось? Ведь в документации сказано, что якобы команды, объединенные логическими операторами не влияют?
+#Прервалось, потому что при вычислении последнего после || значения произошла ошибка.  
 bash -lc "set -e; true || false; echo 'Execution continued'"
-Execution continued
+Execution continued # Последний falsе не выполнился из-за ленивого вычисления
 bash -lc "set -e; false || true; echo 'Execution continued'"
-Execution continued
+Execution continued # последняя команда после || true выполняется без ошибки
 ```
 
-С другой стороны для логического "И" (`&&`) происходит что-то непонятное:
-```
-bash -lc "set -e; false && false; echo 'Execution continued'"
-Execution continued          
-bash -lc "set -e; true && false; echo 'Execution continued'" # <===
-# Почему прервалось? Ведь в документации сказано, что якобы команды, объединенные логическими операторами не влияют?
-bash -lc "set -e; false && true; echo 'Execution continued'"
-Execution continued                                                                                                                                             
-```
-Непонятно, почему прервались команды после  `false || false;` и после `true && false;`, отмеченные комментарием # <===
-Возможно все же влияет код возврата последней команды в логической цепочке?
+Для логического "И" (`&&`) `set -e` работает точно также как и для логического "ИЛИ" (`||`), 
+но с учетом другой таблицы истенности для этой функции и соответственно других комбинаций ленивого вычисления.  
 
-Прошу проверяющего преподавателя подробно объяснить данные нюансы.
-Нашел так же объяснение на сайтах (еще пока не прочитал):  
+Нашел объяснения на сайтах:  
   https://stackoverflow.com/questions/25794905/why-does-set-e-true-false-true-not-exit  
   https://unix.stackexchange.com/questions/647179/bash-e-and-evaluation-inside-functions  
-Подробнее про `&&` на других примерах:
-```
-bash -lc "set -e; false && echo Second Command; echo Third Command" # действие команды set -e не прерывает последовательность после false && true 
-Third Command
+И так же пояснил ваш преподаватель Булат Замилов.
 
-bash -lc "set -e; false && echo Second Command; false; echo Third Command" # а дальше после `;` действует как обычно (прерывает)
-
-bash -lc "set -e; echo 'First Command' && false; echo Third Command" # а здесь прерывает после последовательности true && false
-First Command
-```
 Много интересного про нюансы использования Bash и в частности `set -x`: https://mywiki.wooledge.org/BashPitfalls#errexit
 
 8. Из каких опций состоит режим bash `set -euxo pipefail`, и почему его хорошо было бы использовать в сценариях?
