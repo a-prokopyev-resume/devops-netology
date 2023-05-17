@@ -1,4 +1,6 @@
-# Домашнее задание к занятию «Операционные системы. Лекция 2»
+# [Домашнее задание](https://github.com/a-prokopyev-resume/sysadm-homeworks/tree/devsys10/03-sysadmin-04-os) к занятию [«Операционные системы. Лекция 2»](https://netology.ru/profile/program/sys-dev-27/lessons/242279/lesson_items/1286597)
+
+
 
 ### Цель задания
 

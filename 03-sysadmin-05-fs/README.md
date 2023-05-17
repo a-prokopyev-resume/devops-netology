@@ -1,4 +1,4 @@
-# Домашнее задание к занятию «Файловые системы»
+# [Домашнее задание](https://github.com/a-prokopyev-resume/sysadm-homeworks/tree/devsys10/03-sysadmin-05-fs) к занятию [«Файловые системы»](https://netology.ru/profile/program/sys-dev-27/lessons/242280/lesson_items/1286601)
 
 ### Цель задания
 
