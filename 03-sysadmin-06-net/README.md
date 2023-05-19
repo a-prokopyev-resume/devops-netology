@@ -101,8 +101,6 @@ aut-num:    AS15169
 as-name:    Google
 ```
 
-traceroute --as-path-lookups -n 8.8.8.8 | awk 'NR>1 { if ($3 != "*" && $3 != "[*]" ) print $3}' | xargs -t -I X whois -h whois.radb.net X
-
 Задача 6. Повторите задание 5 в утилите `mtr`. На каком участке наибольшая задержка — delay?
 
 Решение:
