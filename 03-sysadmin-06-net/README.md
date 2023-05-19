@@ -71,10 +71,11 @@ tcp        0      0 192.155.94.xx:62454    xx.96.82.yy:40152     ESTABLISHED 106
 Хороший материал для чтения: [Как по IP узнать Autonomous system](https://hackware.ru/?p=9245)
 Возьмем IP адрес другого запасного провайдера: 31.135.244.15 
 ```
-whois --host whois.radb.net 31.135.244.15 | grep origin:
+whois --host whois.radb.net 31.135.244.15 | grep -E "origin|desc" | grep -v remarks
+descr:          Kurgan-telecom, LLC
 origin:         AS210109
 ```
-Видим, что его AS:  AS210109
+Видим, что это провайдер Kurgan-telecom, его AS:  AS210109
 
 Задача 5. Через какие сети проходит пакет, отправленный с вашего компьютера на адрес 8.8.8.8? Через какие AS? Воспользуйтесь утилитой `traceroute`.
 
