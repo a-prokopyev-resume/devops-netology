@@ -81,18 +81,27 @@ origin:         AS210109
 
 Решение:
 ```
-root@workstation:~# traceroute --as-path-lookups -n 8.8.8.8 | awk 'NR>1 { if ($3 != "*" && $3 != "[*]" ) print $3}'
-[AS31133]
-[AS15169]
- 
-root@kube:~# traceroute --as-path-lookups -n 8.8.8.8 | awk 'NR>1 { if ($3 != "*" && $3 != "[*]" ) print $3}'
-[AS63949]
-[AS63949]
-[AS63221]
-[AS15169]
-[AS15169]
-[AS15169]
+traceroute --as-path-lookups -n 8.8.8.8 | awk 'NR>1 { if ($3 != "*" && $3 != "[*]" ) print $3}' | sed 's/\[//; s/\]//;'  | xargs -I X whois -h whois.radb.net X | grep -E "aut-num|as-name" 
 ```
+Ответ:
+```
+aut-num:    AS63949
+as-name:    LINODE
+aut-num:    AS63949
+as-name:    AKAMAI-LINODE-AP
+aut-num:    AS63949
+as-name:    LINODE
+aut-num:    AS63949
+as-name:    AKAMAI-LINODE-AP
+aut-num:    AS15169
+as-name:    Google
+aut-num:    AS15169
+as-name:    Google
+aut-num:    AS15169
+as-name:    Google
+```
+
+traceroute --as-path-lookups -n 8.8.8.8 | awk 'NR>1 { if ($3 != "*" && $3 != "[*]" ) print $3}' | xargs -t -I X whois -h whois.radb.net X
 
 Задача 6. Повторите задание 5 в утилите `mtr`. На каком участке наибольшая задержка — delay?
 
