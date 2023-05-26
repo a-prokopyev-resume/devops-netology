@@ -195,6 +195,9 @@ Number of key(s) added: 1
 
 Now try logging into the machine, with:   "ssh 'ice'"
 and check to make sure that only the key(s) you wanted were added.
+
+root@workstation /download/14 18:# >  ssh -i rsa8192 ice_new
+Last login: Fri May 26 15:07:43 2023 from 10.0.2.2
 ```
 
 На серверах как и на клиентах тоже можно использовать аппаратную криптографию, а при физическом доступе к серверу в пределах нескольких метров 
@@ -208,10 +211,9 @@ mv rsa8192 rsa8192new
 mv rsa8192.pub rsa8192new.pub
 joe /root/.ssh/config
 
-Host ice
+Host ice_new
         Hostname 127.0.0.1
-	Port 1222
-        User ice
+	    Port 1222
         IdentityFile /download/14/rsa8192new
 ```
 Уточнение: в решениях почти всех задач этой работы и других работ я использую SSH хосты, определенные через имена типа ice, kube и т.п.
@@ -248,7 +250,7 @@ Connection to kube closed.
 root@workstation /download/14 11:# > /utils/rsync.sh data kube:/root/packets.pcap ./
 root@workstation /download/14 12:# > wireshark packets.pcap
 ```
-[Скриншот](images/wireshark.jpg)
+![Скриншот](images/wireshark.jpg)
 
 ---
  
