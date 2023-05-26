@@ -1,0 +1,211 @@
+###########################################################                                                                                                 
+    testssl.sh       3.2rc2 from https://testssl.sh/dev/                                                                                                    
+    (00b510d 2023-05-23 18:39:29)                                                                                                                           
+                                                                                                                                                                          
+      This program is free software. Distribution and                                                                                                                              
+             modification under GPLv2 permitted.                                                                                                                                              
+      USAGE w/o ANY WARRANTY. USE IT AT YOUR OWN RISK!
+
+       Please file bugs @ https://testssl.sh/bugs/
+
+###########################################################
+
+ Using "OpenSSL 1.0.2-bad (1.0.2k-dev)" [~179 ciphers]
+ on chimaera:./bin/openssl.Linux.x86_64
+ (built: "Sep  1 14:03:44 2022", platform: "linux-x86_64")
+
+
+ Start 2023-05-26 13:00:11                -->> xxx.155.94.xxx:443 (vw.aulix.com) <<--
+
+ rDNS (xxx.155.94.xxx):  li614-178.members.linode.com.
+ Service detected:       HTTP
+
+
+ Testing protocols via sockets except NPN+ALPN 
+
+ SSLv2      not offered (OK)
+ SSLv3      not offered (OK)
+ TLS 1      not offered
+ TLS 1.1    not offered
+ TLS 1.2    offered (OK)
+ TLS 1.3    not offered and downgraded to a weaker protocol
+ NPN/SPDY   not offered
+ ALPN/HTTP2 h2, http/1.1 (offered)
+
+ Testing cipher categories 
+
+ NULL ciphers (no encryption)                      not offered (OK)
+ Anonymous NULL Ciphers (no authentication)        not offered (OK)
+ Export ciphers (w/o ADH+NULL)                     not offered (OK)
+ LOW: 64 Bit + DES, RC[2,4], MD5 (w/o export)      not offered (OK)
+ Triple DES Ciphers / IDEA                         not offered
+ Obsoleted CBC ciphers (AES, ARIA etc.)            not offered
+ Strong encryption (AEAD ciphers) with no FS       not offered
+ Forward Secrecy strong encryption (AEAD ciphers)  offered (OK)
+
+
+ Testing server's cipher preferences 
+
+Hexcode  Cipher Suite Name (OpenSSL)       KeyExch.   Encryption  Bits     Cipher Suite Name (IANA/RFC)
+-----------------------------------------------------------------------------------------------------------------------------
+SSLv2
+ - 
+SSLv3
+ - 
+TLSv1
+ - 
+TLSv1.1
+ - 
+TLSv1.2 (no server order, thus listed by strength)
+ xc02c   ECDHE-ECDSA-AES256-GCM-SHA384     ECDH 521   AESGCM      256      TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384                                                                                
+ xcca9   ECDHE-ECDSA-CHACHA20-POLY1305     ECDH 521   ChaCha20    256      TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256                                                                          
+ xc02b   ECDHE-ECDSA-AES128-GCM-SHA256     ECDH 521   AESGCM      128      TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256                                                                                
+TLSv1.3                                                                                                                                                                                           
+ -                                                                                                                                                                                                
+                                                                                                                                                                                                  
+ Has server cipher order?     no                                                                                                                                                                  
+ -- inconclusive test, matching cipher in list missing, better see above                                                                                                                          
+                                                                                                                                                                                                  
+ Testing robust forward secrecy (FS) -- omitting Null Authentication/Encryption, 3DES, RC4                                                                                                        
+
+ FS is offered (OK)           ECDHE-ECDSA-AES256-GCM-SHA384 ECDHE-ECDSA-CHACHA20-POLY1305 ECDHE-ECDSA-AES128-GCM-SHA256 
+ Elliptic curves offered:     prime256v1 secp384r1 
+ TLS 1.2 sig_algs offered:    ECDSA+SHA224 ECDSA+SHA256 ECDSA+SHA384 ECDSA+SHA512 
+
+ Testing server defaults (Server Hello) 
+
+ TLS extensions (standard)    "renegotiation info/#65281" "server name/#0" "EC point formats/#11" "session ticket/#35" "max fragment length/#1" "application layer protocol negotiation/#16"
+                              "extended master secret/#23"
+ Session Ticket RFC 5077 hint 300 seconds, session tickets keys seems to be rotated < daily
+ SSL Session ID support       yes
+ Session Resumption           Tickets: yes, ID: no
+ TLS clock skew               Random values, no fingerprinting possible 
+ Client Authentication        none
+ Signature Algorithm          SHA256 with RSA
+ Server key size              EC 384 bits (curve P-384)
+ Server key usage             Digital Signature
+ Server extended key usage    TLS Web Server Authentication, TLS Web Client Authentication
+ Serial                       0431262E73502C6B172706971FDD00366E25 (OK: length 18)
+ Fingerprints                 SHA1 E58BAF0E6526B593E5DAE4914FD20ED20ED2AC35
+                              SHA256 9F5C22515055446EE6C9553F93846B122307286D04ECBEC929909A80E65A9AB0
+ Common Name (CN)             vw.aulix.com  (request w/o SNI didn't succeed)
+ subjectAltName (SAN)         vw.aulix.com vw.test2.aulix.com 
+ Trust (hostname)             Ok via SAN and CN (SNI mandatory)
+ Chain of trust               Ok   
+ EV cert (experimental)       no 
+ Certificate Validity (UTC)   89 >= 30 days (2023-05-26 09:46 --> 2023-08-24 09:46)
+ ETS/"eTLS", visibility info  not present
+ Certificate Revocation List  --
+ OCSP URI                     http://r3.o.lencr.org
+ OCSP stapling                not offered
+ OCSP must staple extension   --
+ DNS CAA RR (experimental)    not offered
+ Certificate Transparency     yes (certificate extension)
+ Certificates provided        2
+ Issuer                       R3 (Let's Encrypt from US)
+ Intermediate cert validity   #1: ok > 40 days (2025-09-15 16:00). R3 <-- ISRG Root X1
+ Intermediate Bad OCSP (exp.) Ok
+
+
+ Testing HTTP header response @ "/" 
+
+ HTTP Status Code             200 OK
+ HTTP clock skew              -96 sec from localtime
+ Strict Transport Security    730 days=63072000 s, just this domain, preload
+ Public Key Pinning           --
+ Server banner                openresty
+ Application banner           --
+ Cookie(s)                    (none issued at "/")
+ Security headers             X-Frame-Options: SAMEORIGIN
+                              X-Content-Type-Options: nosniff
+                              Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'self' blob:; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline';
+                                child-src 'self' https://*.duosecurity.com https://*.duofederal.com; frame-src 'self' https://*.duosecurity.com https://*.duofederal.com; frame-ancestors 'self'
+                                chrome-extension://nngceckbapebfimnlniiiahkandclblb chrome-extension://jbkfoedolllekgbhcbcoahefnbanhhlh moz-extension://* ; img-src 'self' data: https://haveibeenpwned.com
+                                https://www.gravatar.com ; connect-src 'self' https://api.pwnedpasswords.com https://api.2fa.directory https://app.simplelogin.io/api/ https://app.anonaddy.com/api/
+                                https://api.fastmail.com/ ;
+                              Permissions-Policy: accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), display-capture=(), document-domain=(), encrypted-media=(),
+                                execution-while-not-rendered=(), execution-while-out-of-viewport=(), fullscreen=(), geolocation=(), gyroscope=(), keyboard-map=(), magnetometer=(), microphone=(), midi=(),
+                                payment=(), picture-in-picture=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=()
+                              X-XSS-Protection: 0
+                              X-Served-By: vw.aulix.com
+                              Referrer-Policy: same-origin
+                              Cache-Control: public, max-age=600
+ Reverse Proxy banner         --
+
+
+ Testing vulnerabilities 
+
+ Heartbleed (CVE-2014-0160)                not vulnerable (OK), no heartbeat extension
+ CCS (CVE-2014-0224)                       not vulnerable (OK)
+ Ticketbleed (CVE-2016-9244), experiment.  not vulnerable (OK), no session tickets
+ ROBOT                                     Server does not support any cipher suites that use RSA key transport
+ Secure Renegotiation (RFC 5746)           supported (OK)                                                                                                                                                        
+ Secure Client-Initiated Renegotiation     not vulnerable (OK)                                                                                                                                                   
+ CRIME, TLS (CVE-2012-4929)                not vulnerable (OK)
+ BREACH (CVE-2013-3587)                    potentially NOT ok, "gzip" HTTP compression detected. - only supplied "/" tested
+                                           Can be ignored for static pages or if no secrets in the page
+ POODLE, SSL (CVE-2014-3566)               not vulnerable (OK), no SSLv3 support
+ TLS_FALLBACK_SCSV (RFC 7507)              No fallback possible (OK), no protocol below TLS 1.2 offered
+ SWEET32 (CVE-2016-2183, CVE-2016-6329)    not vulnerable (OK)
+ FREAK (CVE-2015-0204)                     not vulnerable (OK)
+ DROWN (CVE-2016-0800, CVE-2016-0703)      not vulnerable on this host and port (OK)
+                                           no RSA certificate, thus certificate can't be used with SSLv2 elsewhere
+ LOGJAM (CVE-2015-4000), experimental      not vulnerable (OK): no DH EXPORT ciphers, no DH key detected with <= TLS 1.2
+ BEAST (CVE-2011-3389)                     not vulnerable (OK), no SSL3 or TLS1
+ LUCKY13 (CVE-2013-0169), experimental     not vulnerable (OK)
+ Winshock (CVE-2014-6321), experimental    not vulnerable (OK) - ARIA, CHACHA or CCM ciphers found
+ RC4 (CVE-2013-2566, CVE-2015-2808)        no RC4 ciphers detected (OK)
+
+
+ Running client simulations (HTTP) via sockets 
+
+ Browser                      Protocol  Cipher Suite Name (OpenSSL)       Forward Secrecy
+------------------------------------------------------------------------------------------------
+ Android 6.0                  TLSv1.2   ECDHE-ECDSA-AES128-GCM-SHA256     256 bit ECDH (P-256)
+ Android 7.0 (native)         No connection
+ Android 8.1 (native)         TLSv1.2   ECDHE-ECDSA-AES128-GCM-SHA256     253 bit ECDH (X25519)
+ Android 9.0 (native)         TLSv1.2   ECDHE-ECDSA-AES128-GCM-SHA256     253 bit ECDH (X25519)
+ Android 10.0 (native)        TLSv1.2   ECDHE-ECDSA-AES128-GCM-SHA256     253 bit ECDH (X25519)
+ Android 11 (native)          TLSv1.2   ECDHE-ECDSA-AES128-GCM-SHA256     253 bit ECDH (X25519)
+ Android 12 (native)          TLSv1.2   ECDHE-ECDSA-AES128-GCM-SHA256     253 bit ECDH (X25519)
+ Chrome 79 (Win 10)           TLSv1.2   ECDHE-ECDSA-AES128-GCM-SHA256     253 bit ECDH (X25519)
+ Chrome 101 (Win 10)          TLSv1.2   ECDHE-ECDSA-AES128-GCM-SHA256     253 bit ECDH (X25519)
+ Firefox 66 (Win 8.1/10)      TLSv1.2   ECDHE-ECDSA-AES128-GCM-SHA256     253 bit ECDH (X25519)
+ Firefox 100 (Win 10)         TLSv1.2   ECDHE-ECDSA-AES128-GCM-SHA256     253 bit ECDH (X25519)
+ IE 6 XP                      No connection
+ IE 8 Win 7                   No connection
+ IE 8 XP                      No connection
+ IE 11 Win 7                  TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     256 bit ECDH (P-256)
+ IE 11 Win 8.1                TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     256 bit ECDH (P-256)
+ IE 11 Win Phone 8.1          TLSv1.2   ECDHE-ECDSA-AES128-GCM-SHA256     256 bit ECDH (P-256)
+ IE 11 Win 10                 TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     256 bit ECDH (P-256)
+ Edge 15 Win 10               TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     253 bit ECDH (X25519)
+ Edge 101 Win 10 21H2         TLSv1.2   ECDHE-ECDSA-AES128-GCM-SHA256     253 bit ECDH (X25519)
+ Safari 12.1 (iOS 12.2)       TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     253 bit ECDH (X25519)
+ Safari 13.0 (macOS 10.14.6)  TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     253 bit ECDH (X25519)
+ Safari 15.4 (macOS 12.3.1)   TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     253 bit ECDH (X25519)
+ Java 7u25                    No connection
+ Java 8u161                   TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     256 bit ECDH (P-256)
+ Java 11.0.2 (OpenJDK)        TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     256 bit ECDH (P-256)
+ Java 17.0.3 (OpenJDK)        TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     253 bit ECDH (X25519)
+ go 1.17.8                    TLSv1.2   ECDHE-ECDSA-AES128-GCM-SHA256     253 bit ECDH (X25519)
+ LibreSSL 2.8.3 (Apple)       TLSv1.2   ECDHE-ECDSA-CHACHA20-POLY1305     253 bit ECDH (X25519)
+ OpenSSL 1.0.2e               TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     256 bit ECDH (P-256)
+ OpenSSL 1.1.0l (Debian)      TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     253 bit ECDH (X25519)
+ OpenSSL 1.1.1d (Debian)      TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     253 bit ECDH (X25519)
+ OpenSSL 3.0.3 (git)          TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     253 bit ECDH (X25519)
+ Apple Mail (16.0)            TLSv1.2   ECDHE-ECDSA-AES256-GCM-SHA384     256 bit ECDH (P-256)
+ Thunderbird (91.9)           TLSv1.2   ECDHE-ECDSA-AES128-GCM-SHA256     253 bit ECDH (X25519)
+
+
+ Rating (experimental) 
+
+ Rating specs (not complete)  SSL Labs's 'SSL Server Rating Guide' (version 2009q from 2020-01-30)
+ Specification documentation  https://github.com/ssllabs/research/wiki/SSL-Server-Rating-Guide
+ Protocol Support (weighted)  100 (30)
+ Key Exchange     (weighted)  100 (30)
+ Cipher Strength  (weighted)  90 (36)
+ Final Score                  96
+ Overall Grade                A+
+
+ Done 2023-05-26 13:05:31 [ 337s] -->> xxx.155.94.xxx:443 (vw.aulix.com) <<--
