@@ -1,0 +1,11 @@
+* Rebuilt URL to: http://192.168.0.1:80/
+*   Trying 192.168.0.1...
+* TCP_NODELAY set
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:02 --:--:--     0* Connection timed out after 3001 milliseconds
+* Curl_http_done: called premature == 1
+* stopped the pause stream!
+  0     0    0     0    0     0      0      0 --:--:--  0:00:03 --:--:--     0
+* Closing connection 0
+curl: (28) Connection timed out after 3001 milliseconds

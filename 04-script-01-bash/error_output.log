@@ -1,0 +1,38 @@
+* Rebuilt URL to: http://173.194.222.113:80/
+*   Trying 173.194.222.113...
+* TCP_NODELAY set
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0* Connected to 173.194.222.113 (173.194.222.113) port 80 (#0)
+> GET / HTTP/1.1
+> Host: 173.194.222.113
+> User-Agent: curl/7.52.1
+> Accept: */*
+> 
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0< HTTP/1.1 301 Moved Permanently
+< Location: http://www.google.com/
+< Content-Type: text/html; charset=UTF-8
+< Content-Security-Policy-Report-Only: object-src 'none';base-uri 'self';script-src 'nonce-6WVs_c4gd3wm7BU43_5ebA' 'strict-dynamic' 'report-sample' 'unsafe-eval' 'unsafe-inline' https: http:;report-uri https://csp.withgoogle.com/csp/gws/other-hp
+< Date: Tue, 13 Jun 2023 06:25:22 GMT
+< Expires: Thu, 13 Jul 2023 06:25:22 GMT
+< Cache-Control: public, max-age=2592000
+< Server: gws
+< Content-Length: 219
+< X-XSS-Protection: 0
+< X-Frame-Options: SAMEORIGIN
+< 
+{ [219 bytes data]
+* Curl_http_done: called premature == 0
+100   219  100   219    0     0    787      0 --:--:-- --:--:-- --:--:--   787
+* Connection #0 to host 173.194.222.113 left intact
+* Rebuilt URL to: http://192.168.0.1:80/
+*   Trying 192.168.0.1...
+* TCP_NODELAY set
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:02 --:--:--     0* Connection timed out after 3001 milliseconds
+* Curl_http_done: called premature == 1
+* stopped the pause stream!
+  0     0    0     0    0     0      0      0 --:--:--  0:00:03 --:--:--     0
+* Closing connection 0
+curl: (28) Connection timed out after 3001 milliseconds
