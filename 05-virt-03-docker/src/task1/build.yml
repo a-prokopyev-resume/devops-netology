@@ -1,0 +1,28 @@
+---
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  vars_files:
+    - vars/secrets.yml
+  tasks:
+    - name: Variables
+      set_fact:
+        image_name: "aprokopyev/devops-netology-05-virt-03-nginx:v1"
+#    - name: Debug
+#      ansible.builtin.debug:
+#        msg: "{{ docker_user }}"
+    - name: Build
+      docker_image:
+        name: "{{ image_name }}"
+        source: build
+        build:
+          path: "{{ playbook_dir }}"
+    - name: Login
+      docker_login:
+        username: "{{ docker_user }}"
+        password: "{{ docker_password }}"
+    - name: Push
+      docker_image:
+        name: "{{ image_name }}"
+        source: local
+        push: yes

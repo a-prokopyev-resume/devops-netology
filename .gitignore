@@ -5,3 +5,7 @@
 #README.md
 /Stash
 /**/.gitignore
+/**/*_unused
+/**/*.unused
+/**/secrets.yml
+.timestamp

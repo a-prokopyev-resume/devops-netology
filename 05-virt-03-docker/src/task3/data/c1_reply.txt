@@ -1,0 +1,2 @@
+===> This is a reply from container C1
+The host has sent message: Hello from host to C1 via shell pipe!
