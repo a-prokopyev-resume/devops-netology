@@ -9,9 +9,9 @@
 
 ## Задача 1
 
-Создал `task1/Dockerfile`, который собирается с помощью Ansible скрипта `task1/build.yml`, который запускается скриптом `task1/build.sh` 
-(с использованием моего вспомогательного скрипта /utils/iac/ansible.sh) внутри другого инструментального контейнера, описанного в предыдущей домашней работе.
-Ansible скрипт среди прочего также загружает собранный образ моего контейнера на dockerhub в мой репозиторий:
+Создал [task1/Dockerfile](https://src/task1/Dockerfile), который собирается с помощью Ansible плейбука [task1/build.yml](https://src/task1/build.yml), который запускается скриптом [task1/build.sh](https://src/task1/build.sh) 
+(с использованием моего вспомогательного скрипта [/utils/iac/ansible.sh](https://github.com/a-prokopyev-resume/utils/iac/ansible.sh)) внутри другого инструментального контейнера, описанного в [предыдущей домашней работе](https://github.com/a-prokopyev-resume/devops-netology/tree/main/05-virt-02-iaac).
+Ansible плейбук среди прочего также загружает собранный образ моего контейнера на dockerhub в мой репозиторий:
 https://hub.docker.com/repository/docker/aprokopyev/devops-netology-05-virt-03-nginx/general
 
 Запуск скрипта `task1/build.sh` приводит к следующему результату:
@@ -39,7 +39,7 @@ PLAY RECAP *********************************************************************
 localhost                  : ok=4    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 ```
 
-Теперь тестируем с помощью скрипта `task1/test.sh`:
+Теперь тестируем с помощью скрипта [task1/test.sh](https://src/task1/test.sh):
 ```
 16:11 root@workstation /xxx/Netology/DevOps27/Homework/05-virt-03-docker/src/task1 732:# > ./test.sh 
 ++ docker rmi aprokopyev/devops-netology-05-virt-03-nginx:v1 -f
@@ -111,10 +111,10 @@ Back end обычно разрабатывается для запуска в к
 
 ## Задача 3
 
-Задача решается моим скриптом task3/test.sh  
-Он запускает два нужных контейнера и потом запускает скрипты task3/c1.sh и task3/c2.sh в соответствующих контейнерах.
-Причем сообщение с хоста в c1.sh внутри контейнера C1 передается через shell pipe 
-(c помощью вызовов функций из моей библиотеки /utils/docker/lib.sh) БЕЗ использования `--volume` файлов в качестве среды IPC, а в c2.sh через data/message_for_c2.txt в `--volume` /data. 
+Задача решается моим скриптом [task3/test.sh](https://src/task3/test.sh)  
+Он запускает два нужных контейнера и потом запускает скрипты [task3/c1.sh](https://src/task3/c1.sh) и [task3/c2.sh](https://src/task3/c2.sh) в соответствующих контейнерах.
+Причем сообщение с хоста в скрипт `c1.sh`, запускаемого внутри контейнера C1, передается через shell pipe 
+(c помощью вызовов функций из моей библиотеки [/utils/docker/lib.sh](https://github.com/a-prokopyev-resume/utils/docker/lib.sh) БЕЗ использования `--volume` файлов в качестве среды IPC, а в `c2.sh` через `data/message_for_c2.txt` в `--volume` /data. 
 Кроме того делается очистка от ранее запущенных контейнеров в начале и в конце этого скрипта.
 
 ```
