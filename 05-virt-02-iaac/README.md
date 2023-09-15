@@ -1,4 +1,4 @@
-# Домашнее задание к занятию 2. «Применение принципов IaaC в работе с виртуальными машинами»
+# [Домашнее задание](https://github.com/a-prokopyev-resume/virt-homeworks/tree/virt-11/05-virt-02-iaac) к занятию 2. [«Применение принципов IaaC в работе с виртуальными машинами»](https://netology.ru/profile/program/virtd-27/lessons/274656/lesson_items/1471789)
 
 ## Задача 1
 
