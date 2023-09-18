@@ -7,5 +7,11 @@
 /**/.gitignore
 /**/*_unused
 /**/*.unused
+/**/*_hidden
+/**/*.hidden
 /**/secrets.yml
+/**/secrets.json
+/**/secrets.tf
+/**/key.json
+/**/authorized_key.json
 .timestamp
