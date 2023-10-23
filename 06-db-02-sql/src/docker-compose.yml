@@ -1,0 +1,87 @@
+---
+#============================== The Beginning of the Copyright Notice ==========================================================
+# The AUTHOR of this file and the owner of exclusive rights is Alexander Borisovich Prokopyev 
+# born on December 20, 1977 resident of the city of Kurgan, Russia;
+# Series and Russian passport number (only the last two digits for each one): **22-****91
+# Russian Individual Taxpayer Number of the AUTHOR (only the last four digits): ********2007
+# Russian Insurance Number of Individual Ledger Account of the AUTHOR (only the last five digits): ***-***-859 04
+# Copyright (C) Alexander B. Prokopyev, 2023, All Rights Reserved.
+# Contact:     a.prokopyev.resume at gmail dot com
+#
+# All source code contained in this file is protected by copyright law.
+# This file is available under AGPL v3 (GNU Affero General Public License): https://www.gnu.org/licenses/agpl-3.0.en.html
+# PROVIDED FOLLOWING RESTRICTIONS APPLY:
+# Nobody except the AUTHOR may alter or remove this copyright notice from any legal copies of this file content.
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
+# AS IS BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+#================================= The End of the Copyright Notice =============================================================
+
+version: '3.6'
+#name: DBMS_bundle # Unsupported yet in docker-compose v3.6 ?
+services:
+  postgres:
+    container_name: PostgreSQL
+    image: postgres:12.16-bullseye
+#    env_file: # used per service to pass variable into docker, but default .env is passed only to docker-compose for docker-compose.yml interpolation which does NOT replace environment section in the service
+#      - .env
+    environment: # It is better to define per service environment locally from external vars
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - PGDATA=${CONT_DATA_DIR_postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ${HOST_DATA_DIR}/postgres:/${CONT_DATA_DIR_postgres}
+      - ${HOST_BACKUP_DIR}:${CONT_BACKUP_DIR}
+  postgres2:
+    container_name: PostgreSQL2
+    image: postgres:12.16-bullseye
+    environment: 
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - PGDATA=${CONT_DATA_DIR_postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ${HOST_DATA_DIR}/postgres2:/${CONT_DATA_DIR_postgres}
+      - ${HOST_BACKUP_DIR}:${CONT_BACKUP_DIR}
+  mysql:
+    container_name: MySQL
+    image: mysql:8.0.34-debian
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ${HOST_DATA_DIR}/mysql:/${CONT_DATA_DIR_mysql}
+      - ${HOST_BACKUP_DIR}:${CONT_BACKUP_DIR}/
+      - ${HOST_CONFIG_DIR}/mysql:/etc/mysql/conf.d # ${CONT_CONFIG_DIR_mysql}
+    ports:
+     - "3306:3306"
+  gui:
+    container_name: AdminGUI
+    image: adminer
+#     adminer:4.8.1-standalone
+    command: php -S 0.0.0.0:8080 -t /var/www/html # to avoid IPv6 binding
+#    depends_on:
+#      - postgres
+#      - mysql
+    restart: always
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    ports:
+      - "8080:8080"
+
+#volumes:
+#  data_vol: 
+#     driver: local
+#     driver_opts:
+#       device: ./
+#  backup_vol: 
+#    device: ./
+
+#volumes:
+#  data_vol:
+#  backup_vol: 
