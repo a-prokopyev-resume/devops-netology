@@ -5,7 +5,7 @@
 #README.md
 /Stash
 /**/.gitignore
-/**/*_unused
+/**/*_unused*
 /**/*.unused
 /**/*_hidden
 /**/*.hidden
