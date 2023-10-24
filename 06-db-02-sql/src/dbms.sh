@@ -18,46 +18,58 @@
 
 #set -x;
 
-DBMS=$1; # lite | pg | my | elastic | mongo
-Container=$2;
-Action=$3; # cmd | sql_file | backup | restore | shell
-ScriptDir="$(dirname "$(readlink -f "$0")")";
-ConnectionEnvFile=${4:-$ScriptDir/docker-compose.env};
+source lib.sh;
+
+#DBMS=$1; # lite | pg | my | elastic | mongo
+Container=$1; # lite[N] | pg[N] | my[N] | elastic[N] | mongo[N]
+#Container=$2;
+Action=$2; # cmd | sql_file | backup | restore | shell
+#ScriptDir="$(dirname "$(readlink -f "$0")")";
+ConnectionEnv=${3:-super};
 SQLTextFile="/tmp/dbms_resulting.sql";
 
 if [ -z "$Container" ]; then
-	case $DBMS in
-	        ( lite )
-	        	Container="SQLite";
-	        ;;
-
-	        ( pg )
-	        	Container="PostgreSQL";
-        	;;
-
-	        ( my )
-		        Container="MySQL";
-        	;;
-
-	        ( elastic )
-	        	Container="ElasticSearch";
-        	;;
-
-	        ( mongo )
-	        	Container="MongoDB";
-        	;;
-        	
-        	( * )
-        		echo "Error: unknown DBMS: $DBMS !";
-        		exit 1;
-        	;;
-	esac;
+	echo 'Error: $Container parameter cannot be null!';
+	exit 1;
 fi;
+
+LastChar=${Container: -1};
+if echo -n "$LastChar" | grep -q -P "^[0-9]+$"; then # Is number
+	DBMS=${Container:0:-1};
+else
+	DBMS=$Container;
+	Container=$DBMS"1";
+fi;
+
+case $DBMS in
+	( lite | pg | my | elastic | mongo )
+#		echo "=> Database type: $DBMS";
+        ;;
+        ( * )
+		echo "Error: unknown DBMS: $DBMS !";
+                exit 2;
+        ;;
+esac;
+
+#if [ -z "$Container" ]; then
+#	Container=$DBMS"1";
+#fi;
+#if echo $Container | grep "^[0-9]+$"; then # Is number
+#	Container=$DBMS$Container;
+#fi;
+
+#echo "=> Container (compose service): $Container";
+
+src_connection_env()
+{
+	src_env $ConnectionEnv;
+	echo "===| Response [DB: $DB_NAME; U: $DB_USER] at $(date):";
+}
 
 pg_cmd()
 {
 	(
-		source $ConnectionEnvFile;
+		src_connection_env;
 		docker exec -it $Container psql -U $DB_USER -d $DB_NAME -c "$Cmd";
 	)
 }
@@ -65,8 +77,7 @@ pg_cmd()
 pg_sql_file()
 {
 	(
-
-		source $ConnectionEnvFile;
+		src_connection_env;
 		cat $SQLTextFile | docker exec -i $Container psql -U $DB_USER -d $DB_NAME #docker exec -it PostgreSQL psql -U $DB_USER -d $DB_NAME -f "$SQLScriptFile";
 	);
 }
@@ -74,12 +85,8 @@ pg_sql_file()
 pg_create_db()
 {
 	(
-                source $ConnectionEnvFile;
-                echo -e "\n\n\n===> Create database:";
-                ( 
-                        set -x; 
-                        docker exec -it $Container createdb -U $DB_USER $NewDBName;
-                );
+                src_connection_env;
+                set -x; docker exec -it $Container createdb -U $DB_USER $NewDBName;
         )
 
 #        if (  ./postgres_cmd.sh "SELECT 1 FROM pg_database WHERE datname = "\'$DB_NAME\' | grep rows | grep -q 1); then
@@ -93,46 +100,34 @@ pg_create_db()
 pg_backup()
 {
 	(
-		source $ConnectionEnvFile;
-		(
-			set -x;
-			docker exec -it $Container bash -lc "
-				pg_dumpall --globals-only -U $DB_USER > /mnt/backup/$BackupFile.dumpall_globals;
-				pg_dump --column-inserts --format=custom -U $DB_USER -d $DB_NAME > /mnt/backup/$BackupFile.pg_restore
-			";
-		)
+		src_connection_env;
+		set -x; docker exec -it $Container bash -lc "
+			pg_dumpall --globals-only -U $DB_USER > /mnt/backup/$BackupFile.dumpall_globals;
+			pg_dump --column-inserts --format=custom -U $DB_USER -d $DB_NAME > /mnt/backup/$BackupFile.pg_restore
+		";
 	)
 }
 
 pg_restore_custom()
 {
 	(
-		source $ConnectionEnvFile;
-		( 
-			set -x; 
-			docker exec -it $Container bash -lc "
-				psql -U $DB_USER -d $DB_NAME < /mnt/backup/$BackupFile.dumpall_globals;
-				pg_restore $RestoreOptions --verbose -U $DB_USER --dbname=$DB_NAME /mnt/backup/$BackupFile.pg_restore
-			";
-		);
+		src_connection_env;
+		set -x; docker exec -it $Container bash -lc "
+			psql -U $DB_USER -d $DB_NAME < /mnt/backup/$BackupFile.dumpall_globals;
+			pg_restore $RestoreOptions --verbose -U $DB_USER --dbname=$DB_NAME /mnt/backup/$BackupFile.pg_restore
+		";
 	)
 }
 
 pg_wait_ready()
 {
-       (
-                source $ConnectionEnvFile;
-                ( 
-#                        set -x; 
-                        docker exec -it $Container bash -lc "
-                        	while ! pg_isready; do
-                        		sleep 1s;
-                        		echo ' ... waiting 1s ... ';
-                        	done;
-                        ";
-                );
-        );
-      	sleep 10s;
+                docker exec -it $Container bash -lc "
+                       	while ! pg_isready; do
+                       		sleep 1s;
+                       		echo ' ... waiting 1s ... ';
+                     	done;
+	        ";
+      		sleep 10s;
 }
 
 my_cmd()
@@ -156,44 +151,63 @@ my_restore()
 	echo "Not implemented yet!";
 }
 
+docker_inspect()
+{
+	local C=$1;
+	(set -x; docker inspect $C) | grep -i env -A 10;
+	docker ps -a;
+}
+
+docker_stop()
+{
+	local C=$1;
+	(set -x; docker-compose $ComposeEnv stop $C);
+}
+
+docker_clean()
+{
+	/utils/docker/clean_stopped.sh;
+}
+
+echo -e "\n\n\n===> $Action(cont:=$Container, env:=$ConnectionEnv) at $(date):";
+
 case $Action in
         ( cmd )
-        	Cmd=$5;
-        	echo -e "\n\n\n===> Command text at $(date):";
+        	Cmd=$4;
 		echo "$Cmd";
-		echo -e "\n===> DBMS response at $(date):";
 		$DBMS"_"$Action;
         ;;
 
         ( sql_file )
-	        SQLFile="$5";
-		SQLEnvFile="$6";
-		if [ -z "$SQLEnvFile" ]; then
-			SQLEnvFile=$ConnectionEnvFile;
+	        SQLFile="$4";
+		SQLEnv="$5";
+		if [ -z "$SQLEnv" ]; then
+			SQLEnv=$ConnectionEnv;
 		fi;
-		echo -e "\n\n\n===> SQL query text at $(date):";
+		SQLEnvFile=$(env_file $SQLEnv);
+		(
+			source $SQLEnvFile;
+			echo "==> SQL interpolation using [ENV: $SQLEnv; DB_NAME: $DB_NAME; DB_USER: $DB_USER]";
+		)
 		(eval $(cat $SQLEnvFile | xargs) envsubst < $SQLFile) > $SQLTextFile;
-		cat $SQLTextFile;
-		echo -e "\n===> DBMS response at $(date):";
+		cat $SQLTextFile; echo;
 		$DBMS"_"$Action;
 		rm -f $SQLTextFile;
 	;;
 
 	( create_db )
-		NewDBName="$5";
+		NewDBName="$4";
 		$DBMS"_"$Action; 
 	;;
 
         ( backup )
-        	BackupFile="$5";
-		echo -e "\n\n\n===> Backup at $(date):";         	
+        	BackupFile="$4";
 		$DBMS"_"$Action;
         ;;
 
         ( restore )
-	        BackupFile="$5";
+	        BackupFile="$4";
 	        RestoreOptions="${@:6}";
-	        echo -e "\n\n\n===> Restore at $(date):";
 		pg_restore_custom; # command $DBMS"_"$Action;
         ;;
 
@@ -202,12 +216,36 @@ case $Action in
         ;;
         
         ( wait_ready )
-                echo -e "\n\n\n===> Waiting DBMS to start at $(date):";
         	$DBMS"_"$Action;
         ;;
+
+	( start )
+		(set -x; docker-compose $ComposeEnv up -d $Container);
+#		docker_inspect $Container;
+	;;
+
+	( stop )
+		docker_stop $Container;
+	;;
+
+	( clean )
+		/utils/docker/clean_stopped.sh;
+	;;
+	
+	( wipe )
+	        docker_stop $Container;
+	        docker_clean;
+	        sleep 1s;
+	        rm -Rf dbms_data/$Container;
+        	sleep 1s;
+        ;;
+
+	( inspect )
+		docker_inspect $Container;
+	;;        
         
         ( * )
                 echo "Error: unknown Action: $Action !";
-	        exit 2;
+	        exit 3;
         ;;
 esac;

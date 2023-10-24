@@ -10,7 +10,7 @@ echo -e "\n\n\n===> Debug at $(date):";
 case $Action in
 	( start )
 		Services="$MoreArgs";
-		(set -x; docker-compose $Env up -d $Services);
+		(set -x; docker-compose $ComposeEnv up -d $Services);
 #		Containers=$(docker-compose $Env up -d $Services | xargs);
 #		for C in $Containers; do
 #			docker inspect $C | grep -i env -A 10;
@@ -19,7 +19,8 @@ case $Action in
 
 	( stop )
 		Services="$MoreArgs";
-		(set -x; docker-compose $Env stop $Services);
+		(set -x; docker-compose $ComposeEnv stop $Services);
+#		(set -x; docker-compose --env-file=.env/docker-compose.env stop $Services);
 	;;
 
 	( clean )

@@ -18,11 +18,13 @@
 
 #set -x;
 
+source lib.sh;
+
 postgres_cmd()
 {
 	local Cmd=$1;
 	ConnectionEnv=$2;
-	./dbms.sh pg "" cmd "$ConnectionEnv" "$Cmd";
+	./dbms.sh pg cmd "$ConnectionEnv" "$Cmd";
 }
 
 postgres_script()
@@ -30,42 +32,34 @@ postgres_script()
         local SQLFile=$1;
         ConnectionEnv=$2;
         SQLEnv=$3;
-        ./dbms.sh pg "" sql_file "$ConnectionEnv" "$SQLFile" "$SQLEnv";
+        ./dbms.sh pg sql_file "$ConnectionEnv" "$SQLFile" "$SQLEnv";
 }
 
 show_db_objects()
 {
-	ConnectionEnv=$1;
-	Container=$2;
-	
-	./dbms.sh pg "$Container" cmd "$ConnectionEnv" "SELECT * FROM pg_database";
-	./dbms.sh pg "$Container" cmd "$ConnectionEnv" '\l';
-	./dbms.sh pg "$Container" cmd "$ConnectionEnv" '\dt';
-	./dbms.sh pg "$Container" cmd "$ConnectionEnv" '\d+ Clients';
-	./dbms.sh pg "$Container" cmd "$ConnectionEnv" '\d+ Orders';
-	./dbms.sh pg "$Container" cmd "$ConnectionEnv" "SELECT * FROM information_schema.table_privileges WHERE grantee<>'PUBLIC' and table_catalog='test-db'";	
-}
-
-clean_service_state()
-{
-	Service=$1;
-	./compose.sh stop $Service;
-	./compose.sh clean;
-	sleep 1s;
-	rm -Rf dbms_data/$Service;
-	sleep 1s;
+	Container=$1;
+	ConnectionEnv=$2;	
+	./dbms.sh "$Container" cmd "$ConnectionEnv" "SELECT * FROM pg_database";
+	./dbms.sh "$Container" cmd "$ConnectionEnv" '\l';
+	./dbms.sh "$Container" cmd "$ConnectionEnv" '\dt';
+	./dbms.sh "$Container" cmd "$ConnectionEnv" '\d+ Clients';
+	./dbms.sh "$Container" cmd "$ConnectionEnv" '\d+ Orders';
+	( 
+		src_env $ConnectionEnv;
+		./dbms.sh "$Container" cmd "$ConnectionEnv" "SELECT * FROM information_schema.table_privileges WHERE grantee<>'PUBLIC' and table_catalog="\'$DB_NAME\' ;
+	);
 }
 
 # For debug only
 clean_database1()
 {
 	(
-		source admin.env;
+		src_env admin;
 		postgres_cmd "DROP DATABASE \"$DB_NAME\" ";
 		postgres_cmd "DROP USER \"$DB_USER\" ";
 	)
 	(	
-		source user.env;
+		src_env user;
 		postgres_cmd "DROP USER \"$DB_USER\" ";
 	);
 }
@@ -73,18 +67,17 @@ clean_database1()
 task1()
 {
 #	clean_database1;
-	clean_service_state postgres;
-	./compose.sh start postgres;
-        ./dbms.sh pg "" wait_ready;
-#        sleep 10s;
+	./dbms.sh pg1 wipe;
+	./dbms.sh pg1 start;
+        ./dbms.sh pg1 wait_ready;
 }
 
 task2()
 {
-	postgres_script task2a.sql docker-compose.env admin.env;
+	postgres_script task2a.sql "" admin;
 
 	(	
-		source admin.env;
+		src_env admin;
 		if (  postgres_cmd "SELECT 1 FROM pg_database WHERE datname = "\'$DB_NAME\' | grep rows | grep -q 1); then
 			echo "Database already exists";
 		else
@@ -93,43 +86,41 @@ task2()
 		fi;
 	);
 
-	postgres_script task2b.sql admin.env user.env;
-	show_db_objects admin.env;
+	postgres_script task2b.sql admin user;
+	show_db_objects pg admin;
 }
 
 task3()
 {
-	./dbms.sh pg "" sql_file user.env task3.sql;
+	./dbms.sh pg sql_file user task3.sql;
 }
 
 task4()
 {
-	./dbms.sh pg "" sql_file user.env task4.sql;
+	./dbms.sh pg sql_file user task4.sql;
 }
 
 task5()
 {
-	./dbms.sh pg "" sql_file user.env task5.sql;
+	./dbms.sh pg sql_file user task5.sql;
 }
 
 task6()
 {
-	BackupFile="backup8";
+	BackupFile="backup11";
 
-	./compose.sh start postgres;
-	./compose.sh inspect PostgreSQL;
-	./dbms.sh pg "" backup postgres.env $BackupFile;
-	./compose.sh stop postgres;
+	./dbms.sh pg1 start;
+	./dbms.sh pg1 inspect;
+	./dbms.sh pg backup super1 $BackupFile;
+#	./dbms.sh pg1 stop;
 
-	clean_service_state postgres2;
-	./compose.sh start postgres2;
-	./compose.sh inspect PostgreSQL2;
-	./dbms.sh pg "PostgreSQL2" wait_ready;
-	./dbms.sh pg "PostgreSQL2" create_db "" "test-db2";
-	./dbms.sh pg "PostgreSQL2" restore "postgres2.env" $BackupFile; # --no-owner; # --create
-	show_db_objects postgres2.env PostgreSQL2;
-
-	clean_service_state postgres2;
+	./dbms.sh pg2 wipe;
+	./dbms.sh pg2 start super2;
+	./dbms.sh pg2 inspect;
+	./dbms.sh pg2 wait_ready;
+	./dbms.sh pg2 create_db super2 "test-db2";
+	./dbms.sh pg2 restore super2 $BackupFile; # --no-owner; # --create
+	show_db_objects pg2 admin2;
 }
 
 task1;
@@ -139,6 +130,7 @@ task4;
 task5;
 task6;
 
-clean_service_state postgres;
+./dbms.sh pg1 wipe;
+./dbms.sh pg2 wipe;
 
 # Its is better to place information about expected container into an environment file later?

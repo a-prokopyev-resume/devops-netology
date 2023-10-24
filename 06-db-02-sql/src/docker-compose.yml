@@ -17,71 +17,79 @@
 # specific language governing permissions and limitations under the License.
 #================================= The End of the Copyright Notice =============================================================
 
-version: '3.6'
-#name: DBMS_bundle # Unsupported yet in docker-compose v3.6 ?
+#===> Tested with:
+# Devuan Chimaera (like Debian v11)
+# Docker Compose version v2.23.0
+# docker.io		20.10.5+dfsg1-1+deb11u2	amd64
+# python3-docker	5.0.3-1~bpo11+1
+
+version: '3.8'
+name: dbms 
 services:
-  postgres:
-    container_name: PostgreSQL
-    image: postgres:12.16-bullseye
-#    env_file: # used per service to pass variable into docker, but default .env is passed only to docker-compose for docker-compose.yml interpolation which does NOT replace environment section in the service
-#      - .env
+  pg1:
+    container_name: pg1
+    image: ${IMAGE_PG}
+    env_file: # used per service to pass variable into docker, but default .env is passed only to docker-compose for docker-compose.yml interpolation which does NOT replace environment section in the service
+      - env/common.env
     environment: # It is better to define per service environment locally from external vars
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
-      - PGDATA=${CONT_DATA_DIR_postgres}
+      - PGDATA=${CONT_DATA_DIR_PG}
     ports:
-      - "5432:5432"
+      - "5431:5432"
     volumes:
-      - ${HOST_DATA_DIR}/postgres:/${CONT_DATA_DIR_postgres}
+      - ${HOST_DATA_DIR}/pg1:/${CONT_DATA_DIR_PG}
       - ${HOST_BACKUP_DIR}:${CONT_BACKUP_DIR}
-  postgres2:
-    container_name: PostgreSQL2
-    image: postgres:12.16-bullseye
+  pg2:
+    container_name: pg2
+    image: ${IMAGE_PG}
+    env_file:
+      - env/common.env
     environment: 
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
-      - PGDATA=${CONT_DATA_DIR_postgres}
+      - PGDATA=${CONT_DATA_DIR_PG}
     ports:
       - "5432:5432"
     volumes:
-      - ${HOST_DATA_DIR}/postgres2:/${CONT_DATA_DIR_postgres}
+      - ${HOST_DATA_DIR}/pg2:/${CONT_DATA_DIR_PG}
       - ${HOST_BACKUP_DIR}:${CONT_BACKUP_DIR}
-  mysql:
-    container_name: MySQL
-    image: mysql:8.0.34-debian
+  my1:
+    container_name: my1
+    image: ${IMAGE_MY}
+    env_file:
+      - env/common.env    
     environment:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
     volumes:
-      - ${HOST_DATA_DIR}/mysql:/${CONT_DATA_DIR_mysql}
+      - ${HOST_DATA_DIR}/my1:/${CONT_DATA_DIR_MY}
       - ${HOST_BACKUP_DIR}:${CONT_BACKUP_DIR}/
-      - ${HOST_CONFIG_DIR}/mysql:/etc/mysql/conf.d # ${CONT_CONFIG_DIR_mysql}
+      - ${HOST_CONFIG_DIR}/my1:/etc/mysql/conf.d # ${CONT_CONFIG_DIR_mysql}
+    ports:
+     - "3306:3306"
+  my2:
+    container_name: my2
+    image: ${IMAGE_MY}
+    env_file:
+      - env/common.env    
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ${HOST_DATA_DIR}/my2:/${CONT_DATA_DIR_MY}
+      - ${HOST_BACKUP_DIR}:${CONT_BACKUP_DIR}/
+      - ${HOST_CONFIG_DIR}/my2:/etc/mysql/conf.d # ${CONT_CONFIG_DIR_mysql}
     ports:
      - "3306:3306"
   gui:
-    container_name: AdminGUI
-    image: adminer
-#     adminer:4.8.1-standalone
+    container_name: gui
+    image: adminer:4.8.1-standalone
     command: php -S 0.0.0.0:8080 -t /var/www/html # to avoid IPv6 binding
-#    depends_on:
-#      - postgres
-#      - mysql
     restart: always
     environment:
       ADMINER_DEFAULT_SERVER: postgres
     ports:
       - "8080:8080"
-
-#volumes:
-#  data_vol: 
-#     driver: local
-#     driver_opts:
-#       device: ./
-#  backup_vol: 
-#    device: ./
-
-#volumes:
-#  data_vol:
-#  backup_vol: 
