@@ -1,0 +1,123 @@
+---
+#============================== The Beginning of the Copyright Notice ==========================================================
+# The AUTHOR of this file and the owner of exclusive rights is Alexander Borisovich Prokopyev 
+# born on December 20, 1977 resident of the city of Kurgan, Russia;
+# Series and Russian passport number (only the last two digits for each one): **22-****91
+# Russian Individual Taxpayer Number of the AUTHOR (only the last four digits): ********2007
+# Russian Insurance Number of Individual Ledger Account of the AUTHOR (only the last five digits): ***-***-859 04
+# Copyright (C) Alexander B. Prokopyev, 2023, All Rights Reserved.
+# Contact:     a.prokopyev.resume at gmail dot com
+#
+# All source code contained in this file is protected by copyright law.
+# This file is available under AGPL v3 (GNU Affero General Public License): https://www.gnu.org/licenses/agpl-3.0.en.html
+# PROVIDED FOLLOWING RESTRICTIONS APPLY:
+# Nobody except the AUTHOR may alter or remove this copyright notice from any legal copies of this file content.
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
+# AS IS BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+#================================= The End of the Copyright Notice =============================================================
+
+- name: =========> Starting profiling role for the following Engine
+  debug:
+    var: Engine
+
+- name: Set engine and enable profiling
+  community.mysql.mysql_query:
+    query: "ALTER TABLE orders ENGINE = {{ Engine }}; SET GLOBAL profiling = 1;"
+    login_db: "{{ AdminEnv.DB_NAME }}"
+    login_user: "{{ AdminEnv.DB_USER }}"
+    login_password: "{{ AdminEnv.DB_PASSWORD }}"
+    login_host: my1
+  register: Result
+- debug:
+    var: Result
+
+- name: Show choosen tables engines
+  community.mysql.mysql_query:
+    query: "SELECT TABLE_NAME, ENGINE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{{ AdminEnv.DB_NAME}}';"
+    login_db: "{{ AdminEnv.DB_NAME }}"
+    login_user: "{{ AdminEnv.DB_USER }}"
+    login_password: "{{ AdminEnv.DB_PASSWORD }}"
+    login_host: my1
+  register: Result
+- debug:
+    var: Result
+
+- name: Make some load on the database
+  community.mysql.mysql_query:
+#    query: select * from orders; insert into orders(title, price) values ('Test', {{ item }}); delete from orders where price={{ item }}; select * from orders;
+    query: select TestLoad();
+    login_db: "{{ AdminEnv.DB_NAME }}"
+    login_user: "{{ AdminEnv.DB_USER }}"
+    login_password: "{{ AdminEnv.DB_PASSWORD }}"
+    login_host: my1
+#  with_sequence: count=100
+  register: Result
+- debug:
+    var: Result
+
+- name: Show profiles
+  community.mysql.mysql_query:
+    query: SHOW PROFILES;
+    login_db: "{{ AdminEnv.DB_NAME }}"
+    login_user: "{{ AdminEnv.DB_USER }}"
+    login_password: "{{ AdminEnv.DB_PASSWORD }}"
+    login_host: my1
+  register: Result
+- debug:
+    var: Result
+
+#- name: Show profile details
+#  community.mysql.mysql_query:
+#    query: SHOW PROFILE;
+#    login_db: "{{ AdminEnv.DB_NAME }}"
+#    login_user: "{{ AdminEnv.DB_USER }}"
+#    login_password: "{{ AdminEnv.DB_PASSWORD }}"
+#    login_host: my1
+#  register: Result
+#- debug:
+#    var: Result
+
+#- name: Amount of orders with price over 300
+#  community.docker.docker_container_exec:
+#    container: my1
+#    command: /bin/bash -c "mysql -u {{ AdminEnv.DB_USER }} -p{{ AdminEnv.DB_PASSWORD }} --database {{ AdminEnv.DB_NAME }} -e 'select count(*) from orders where price > 300;'";
+#  register: Result
+#- debug:
+#    var: Result
+
+- name: Show profile details
+  community.docker.docker_container_exec:
+    container: my1
+    command: mysql -u {{ AdminEnv.DB_USER }} -p{{ AdminEnv.DB_PASSWORD }} --database {{ AdminEnv.DB_NAME }} -e "SHOW PROFILE;" #  SHOW VARIABLES LIKE 'profiling';";
+  register: Result
+- debug:
+    var: Result
+
+- name: Disabling global profiling
+  community.mysql.mysql_query:
+    query: "SET GLOBAL profiling = 0;"
+    login_db: "{{ AdminEnv.DB_NAME }}"
+    login_user: "{{ AdminEnv.DB_USER }}"
+    login_password: "{{ AdminEnv.DB_PASSWORD }}"
+    login_host: my1
+  register: Result
+- debug:
+    var: Result
+
+#- name: Count to 10
+#  debug: 
+#    msg: "Current counter is {{ item }}"
+#  with_sequence: count=10
+
+#- name: Stop the play if a condition is not met
+#  assert:
+#    that: "1 == 2"
+#    fail_msg: "Stopping!"
+#  when: skip123 in ansible_play_tags
+
+
+#- name: Fail and stop the play
+#  fail:
+#    msg: "Unconditional stopping play execution"
+  

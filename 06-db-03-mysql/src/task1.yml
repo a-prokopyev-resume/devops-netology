@@ -1,0 +1,83 @@
+---
+#============================== The Beginning of the Copyright Notice ==========================================================
+# The AUTHOR of this file and the owner of exclusive rights is Alexander Borisovich Prokopyev 
+# born on December 20, 1977 resident of the city of Kurgan, Russia;
+# Series and Russian passport number (only the last two digits for each one): **22-****91
+# Russian Individual Taxpayer Number of the AUTHOR (only the last four digits): ********2007
+# Russian Insurance Number of Individual Ledger Account of the AUTHOR (only the last five digits): ***-***-859 04
+# Copyright (C) Alexander B. Prokopyev, 2023, All Rights Reserved.
+# Contact:     a.prokopyev.resume at gmail dot com
+#
+# All source code contained in this file is protected by copyright law.
+# This file is available under AGPL v3 (GNU Affero General Public License): https://www.gnu.org/licenses/agpl-3.0.en.html
+# PROVIDED FOLLOWING RESTRICTIONS APPLY:
+# Nobody except the AUTHOR may alter or remove this copyright notice from any legal copies of this file content.
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
+# AS IS BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+#================================= The End of the Copyright Notice =============================================================
+
+- name: ===> TASK_1. Create container and MySQL instance, restore database from a dump file, show some object inventory and help commands.
+  debug:
+    msg: |-
+      Используя Docker, поднимите инстанс MySQL (версию 8). Данные БД сохраните в volume.
+      Изучите бэкап БД и восстановитесь из него.
+      Перейдите в управляющую консоль mysql внутри контейнера.
+      Используя команду \h, получите список управляющих команд.
+      Найдите команду для выдачи статуса БД и приведите в ответе из её вывода версию сервера БД.
+      Подключитесь к восстановленной БД и получите список таблиц из этой БД.
+      Приведите в ответе количество записей с price > 300.
+
+- name: Download database dump file
+  ansible.builtin.get_url:
+    url: "{{ DB_DUMP_URL }}"
+    dest: "{{ HOST_BACKUP_DIR }}/"
+    
+- name: Restore database from downloaded file
+  community.mysql.mysql_db:
+    name: "{{ AdminEnv.DB_NAME }}"
+    state: import
+    target: "{{ HOST_BACKUP_DIR }}/{{DB_DUMP_FILE}}" # It is a client (iac_tools container) directory? 
+    login_user: "{{ AdminEnv.DB_USER }}"
+    login_password: "{{ AdminEnv.DB_PASSWORD }}"
+    login_host: my1
+
+- name: MySQL list of commands (output of help command)
+  community.docker.docker_container_exec:
+    container: my1
+    command: /bin/bash -c "mysql -u {{ AdminEnv.DB_USER }} -p{{ AdminEnv.DB_PASSWORD }} -e 'help;'";
+  register: Result
+- debug:
+    var: Result.stdout_lines
+
+- name: MySQL connection information
+  community.docker.docker_container_exec:
+    container: my1
+    command: /bin/bash -c "mysql -u {{ AdminEnv.DB_USER }} -p{{ AdminEnv.DB_PASSWORD }} -e '\s'";
+  register: Result
+- debug:
+    var: Result.stdout_lines
+    
+- name: List of all MySQL databases
+  community.docker.docker_container_exec:
+    container: my1
+    command: /bin/bash -c "mysql -u {{ AdminEnv.DB_USER }} -p{{ AdminEnv.DB_PASSWORD }} -e 'show databases'";
+  register: Result
+- debug:
+    var: Result.stdout_lines
+
+- name: List of tables inside MySQL database {{ AdminEnv.DB_NAME }}
+  community.docker.docker_container_exec:
+    container: my1
+    command: /bin/bash -c "mysql -u {{ AdminEnv.DB_USER }} -p{{ AdminEnv.DB_PASSWORD }} --database {{ AdminEnv.DB_NAME }} -e 'show tables;'";
+  register: Result
+- debug:
+    var: Result.stdout_lines
+    
+- name: Amount of orders with price over 300
+  community.docker.docker_container_exec:
+    container: my1
+    command: /bin/bash -c "mysql -u {{ AdminEnv.DB_USER }} -p{{ AdminEnv.DB_PASSWORD }} --database {{ AdminEnv.DB_NAME }} -e 'select count(*) from orders where price > 300;'";
+  register: Result
+- debug:
+    var: Result.stdout_lines

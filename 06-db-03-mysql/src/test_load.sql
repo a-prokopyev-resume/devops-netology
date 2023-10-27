@@ -1,0 +1,16 @@
+DROP FUNCTION TestLoad;
+DELIMITER //
+CREATE FUNCTION TestLoad()
+  RETURNS INT
+  DETERMINISTIC
+  BEGIN
+  DECLARE X INT DEFAULT 0;
+  DECLARE Y INT DEFAULT 0;
+  SET X = 1;
+  WHILE X <= 1000 DO
+    SELECT count(*) INTO y FROM orders; INSERT INTO orders(title, price) VALUES ('Test', x); DELETE FROM orders WHERE price=x; 
+    SET x = x + 1;
+  END WHILE;
+  RETURN X;
+  END //
+DELIMITER ;

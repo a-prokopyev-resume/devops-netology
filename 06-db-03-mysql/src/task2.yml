@@ -1,0 +1,91 @@
+---
+#============================== The Beginning of the Copyright Notice ==========================================================
+# The AUTHOR of this file and the owner of exclusive rights is Alexander Borisovich Prokopyev 
+# born on December 20, 1977 resident of the city of Kurgan, Russia;
+# Series and Russian passport number (only the last two digits for each one): **22-****91
+# Russian Individual Taxpayer Number of the AUTHOR (only the last four digits): ********2007
+# Russian Insurance Number of Individual Ledger Account of the AUTHOR (only the last five digits): ***-***-859 04
+# Copyright (C) Alexander B. Prokopyev, 2023, All Rights Reserved.
+# Contact:     a.prokopyev.resume at gmail dot com
+#
+# All source code contained in this file is protected by copyright law.
+# This file is available under AGPL v3 (GNU Affero General Public License): https://www.gnu.org/licenses/agpl-3.0.en.html
+# PROVIDED FOLLOWING RESTRICTIONS APPLY:
+# Nobody except the AUTHOR may alter or remove this copyright notice from any legal copies of this file content.
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
+# AS IS BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+#================================= The End of the Copyright Notice =============================================================
+
+- name: ===> TASK_2. Create new user, grant rights to him, show results
+  debug:
+    msg: |-
+      Создайте пользователя test в БД c паролем test-pass, используя:
+          плагин авторизации mysql_native_password
+          срок истечения пароля — 180 дней
+          количество попыток авторизации — 3
+          максимальное количество запросов в час — 100
+          аттрибуты пользователя:
+              Фамилия "Pretty"
+              Имя "James".
+      Предоставьте привелегии пользователю test на операции SELECT базы test_db.
+      Используя таблицу INFORMATION_SCHEMA.USER_ATTRIBUTES, получите данные по пользователю test и приведите в ответе к задаче.
+
+- name: Create new MySQL user
+  community.mysql.mysql_user:
+    name: "{{ UserEnv.DB_USER }}"
+    state: present
+    password: "{{ UserEnv.DB_PASSWORD }}"
+    host: '%'
+    plugin: mysql_native_password #caching_sha2_password
+    append_privs: yes
+    login_user: "{{ AdminEnv.DB_USER }}"
+    login_password: "{{ AdminEnv.DB_PASSWORD }}"
+    login_host: my1
+    priv: "{{ UserEnv.DB_NAME }}.*:SELECT"
+    resource_limits:
+      MAX_QUERIES_PER_HOUR: 100
+      MAX_CONNECTIONS_PER_HOUR: 0 # Unlimited
+      #          MAX_UPDATES_PER_HOUR: num, 
+      #          MAX_USER_CONNECTIONS: num, 
+      #          MAX_STATEMENT_TIME: num          
+      #	append_privs, priv, subtract_privs, plugin, plugin_auth_string, plugin_hash_string
+
+- name: Slightly update user permissions
+  community.mysql.mysql_query:
+    query: "ALTER USER '{{ UserEnv.DB_USER }}'@'%' PASSWORD EXPIRE INTERVAL 180 DAY  FAILED_LOGIN_ATTEMPTS 3 PASSWORD_LOCK_TIME 2;" 
+    login_user: "{{ AdminEnv.DB_USER }}"
+    login_password: "{{ AdminEnv.DB_PASSWORD }}"
+    login_host: my1
+  register: Result
+  ignore_errors: yes
+- debug:
+    var: Result
+
+- name: Assign user attributes in JSON format to a variable
+  set_fact:
+    UserAttributes: {"fname": "James", "lname": "Pretty"}
+- debug:
+    msg: "{{ UserAttributes }}"
+    
+- name: Update user attributes
+  community.mysql.mysql_query:
+    query: "ALTER USER '{{ UserEnv.DB_USER }}'@'%'  ATTRIBUTE '{\"fname\": \"James\", \"lname\": \"Pretty\"}';" #  ATTRIBUTE '{"fname": "James", "lname": "Pretty"}'        
+    #        query: "ALTER USER '{{ UserEnv.DB_USER }}'@'%'  ATTRIBUTE '{{ UserAttributes | replace(\"'\", \"'\") }}';" # Why does not work? How to see which query text is produced?
+    login_user: "{{ AdminEnv.DB_USER }}"
+    login_password: "{{ AdminEnv.DB_PASSWORD }}"
+    login_host: my1
+  register: Result
+  ignore_errors: yes
+- debug:
+    var: Result        
+
+- name: Show user permissions
+  community.mysql.mysql_query:
+    query: "SELECT * FROM INFORMATION_SCHEMA.USER_ATTRIBUTES WHERE USER='{{ UserEnv.DB_USER }}';"
+    login_user: "{{ AdminEnv.DB_USER }}"
+    login_password: "{{ AdminEnv.DB_PASSWORD }}"
+    login_host: my1
+  register: Result
+- debug:
+    var: Result

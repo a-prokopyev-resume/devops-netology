@@ -1,0 +1,52 @@
+---
+#============================== The Beginning of the Copyright Notice ==========================================================
+# The AUTHOR of this file and the owner of exclusive rights is Alexander Borisovich Prokopyev 
+# born on December 20, 1977 resident of the city of Kurgan, Russia;
+# Series and Russian passport number (only the last two digits for each one): **22-****91
+# Russian Individual Taxpayer Number of the AUTHOR (only the last four digits): ********2007
+# Russian Insurance Number of Individual Ledger Account of the AUTHOR (only the last five digits): ***-***-859 04
+# Copyright (C) Alexander B. Prokopyev, 2023, All Rights Reserved.
+# Contact:     a.prokopyev.resume at gmail dot com
+#
+# All source code contained in this file is protected by copyright law.
+# This file is available under AGPL v3 (GNU Affero General Public License): https://www.gnu.org/licenses/agpl-3.0.en.html
+# PROVIDED FOLLOWING RESTRICTIONS APPLY:
+# Nobody except the AUTHOR may alter or remove this copyright notice from any legal copies of this file content.
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
+# AS IS BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+#================================= The End of the Copyright Notice =============================================================
+
+- name: ===> TASK_3. Profiling different engines (MyISAM and InnoDB)
+  debug:
+    msg: |-
+      Установите профилирование SET profiling = 1. Изучите вывод профилирования команд SHOW PROFILES;.
+      Исследуйте, какой engine используется в таблице БД test_db и приведите в ответе.
+      Измените engine и приведите время выполнения и запрос на изменения из профайлера в ответе:
+        на MyISAM,
+        на InnoDB.
+
+- name: Copy test_load.sql
+  copy:
+    src: test_load.sql
+    dest: /mnt/backup/
+
+- name: Create a function for load testing
+  community.docker.docker_container_exec:
+    container: my1
+    command: bash -lc "cat /mnt/backup/test_load.sql | mysql -u {{ AdminEnv.DB_USER }} -p{{ AdminEnv.DB_PASSWORD }} --database {{ AdminEnv.DB_NAME }}"
+  ignore_errors: yes
+  register: Result
+- debug:
+    var: Result
+
+- include_role:
+    name: profiling
+  vars:
+    Engine: "InnoDB"
+
+- include_role:
+    name: profiling
+  vars:
+    Engine: "MyISAM"
+
