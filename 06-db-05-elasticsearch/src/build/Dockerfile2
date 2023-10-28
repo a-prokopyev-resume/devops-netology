@@ -1,0 +1,3 @@
+FROM elasticsearch:7.16.1
+
+# Everything is done on the level of docker-compose.yaml :)

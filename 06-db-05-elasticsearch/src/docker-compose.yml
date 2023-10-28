@@ -1,0 +1,189 @@
+---
+#============================== The Beginning of the Copyright Notice ==========================================================
+# The AUTHOR of this file and the owner of exclusive rights is Alexander Borisovich Prokopyev 
+# born on December 20, 1977 resident of the city of Kurgan, Russia;
+# Series and Russian passport number (only the last two digits for each one): **22-****91
+# Russian Individual Taxpayer Number of the AUTHOR (only the last four digits): ********2007
+# Russian Insurance Number of Individual Ledger Account of the AUTHOR (only the last five digits): ***-***-859 04
+# Copyright (C) Alexander B. Prokopyev, 2023, All Rights Reserved.
+# Contact:     a.prokopyev.resume at gmail dot com
+#
+# All source code contained in this file is protected by copyright law.
+# This file is available under AGPL v3 (GNU Affero General Public License): https://www.gnu.org/licenses/agpl-3.0.en.html
+# PROVIDED FOLLOWING RESTRICTIONS APPLY:
+# Nobody except the AUTHOR may alter or remove this copyright notice from any legal copies of this file content.
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
+# AS IS BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+#================================= The End of the Copyright Notice =============================================================
+
+#===> Tested with:
+# Devuan Chimaera (like Debian v11)
+# Docker Compose version v2.23.0
+# docker.io		20.10.5+dfsg1-1+deb11u2	amd64
+# python3-docker	5.0.3-1~bpo11+1
+
+version: '3.8'
+name: dbms 
+
+configs:
+  es:
+    file: ./configs/elasticsearch/config.yml
+
+
+services:
+  pg1:
+    container_name: pg1
+    image: ${IMAGE_PG}
+    env_file: # used per service to pass variable into docker, but default .env is passed only to docker-compose for docker-compose.yml interpolation which does NOT replace environment section in the service
+      - env/common.env
+    environment: # It is better to define per service environment locally from external vars
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - PGDATA=${CONT_DATA_DIR_PG}
+    ports:
+      - "5431:5432"
+    volumes:
+      - ${HOST_DATA_DIR}/pg1:/${CONT_DATA_DIR_PG}
+      - ${HOST_BACKUP_DIR}:${CONT_BACKUP_DIR}
+  pg2:
+    container_name: pg2
+    image: ${IMAGE_PG}
+    env_file:
+      - env/common.env
+    environment: 
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - PGDATA=${CONT_DATA_DIR_PG}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ${HOST_DATA_DIR}/pg2:/${CONT_DATA_DIR_PG}
+      - ${HOST_BACKUP_DIR}:${CONT_BACKUP_DIR}
+  my1:
+    container_name: my1
+#    image: mysql:8.0.35-debian
+#    image: mysql:8.2.0-oracle
+    image: ${IMAGE_MY}
+    env_file:
+      - env/common.env
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ${HOST_DATA_DIR}/my1:/${CONT_DATA_DIR_MY}
+      - ${HOST_BACKUP_DIR}:${CONT_BACKUP_DIR}/
+      - ${HOST_CONFIG_DIR}/my1:/etc/mysql/conf.d # ${CONT_CONFIG_DIR_mysql}
+    ports:
+     - "3306:3306"
+  my2:
+    container_name: my2
+    image: ${IMAGE_MY}
+    env_file:
+      - env/common.env    
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ${HOST_DATA_DIR}/my2:/${CONT_DATA_DIR_MY}
+      - ${HOST_BACKUP_DIR}:${CONT_BACKUP_DIR}/
+      - ${HOST_CONFIG_DIR}/my2:/etc/mysql/conf.d # ${CONT_CONFIG_DIR_mysql}
+    ports:
+     - "3306:3306"
+  gui:
+    container_name: gui
+    image: adminer:4.8.1-standalone
+    command: php -S 0.0.0.0:8080 -t /var/www/html # to avoid IPv6 binding
+    restart: always
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    ports:
+      - "8080:8080"
+  iac:
+    container_name: iac
+#    image: amd64/debian_iac:pip3_ansible_lint_docker_mysql
+    image: amd64/debian_iac:pip3_ansible_docker_mysql
+#    environment:
+#      ADMINER_DEFAULT_SERVER: postgres
+    command: bash -lc "sleep 10h"
+    volumes:
+      - /download/netology:/download/netology
+      - /download/netology:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /download/netology/dbms_backup:/mnt/backup
+    working_dir:
+      /download/netology
+
+  elasticsearch:
+#    name: netology_test
+#   netology_test:
+    image: aprokopyev/devops-netology-06-db-05-elasticsearch:v1  #elasticsearch:7.16.1
+    build:
+      context: ./build
+      dockerfile: Dockerfile2
+#      args:
+#        BUILD_ENV: dev
+#      target: development
+#      network: host
+#      cache_from: 
+#        - nginx:latest
+      labels:
+        com.example.description: "06-db-05-elasticsearch"
+        com.example.author: "Alexander Prokopyev"
+    configs:
+      - source: es
+#        target: /var/lib/elasticsearch/config/elasticsearch.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+    volumes:
+#      - ./configs/elasticsearch/config.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+#      - ./dbms_data/elasticsearch/data:/usr/share/elasticsearch/data
+
+#       - ./configs/elasticsearch/config.yml:/var/lib/elasticsearch/config/elasticsearch.yml:ro
+#       - ./dbms_data/elasticsearch/data:/var/lib/elasticsearch/data
+       - ./dbms_data/elasticsearch:/var/lib/elasticsearch
+       - ./dbms_logs/elasticsearch:/var/log/elasticsearch
+       - ./dbms_backup/elasticsearch:/usr/share/elasticsearch/snapshots
+    environment:
+#      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ES_JAVA_OPTS: "-Xmx512m -Xms512m"
+      ELASTIC_USERNAME: "elastic"
+      ELASTIC_PASSWORD: "MyPw123"
+      discovery.type: single-node
+#    networks:
+#      - elk
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      default:
+        aliases:
+          - netology_test
+
+  logstash:
+    image: logstash:7.16.2
+    volumes:
+      - ./configs/logstash/config.yml:/usr/share/logstash/config/logstash.yml:ro
+    environment:
+#      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+       LS_JAVA_OPTS: "-Xmx512m -Xms512m"
+    ports:
+      - "5044:5044"
+      - "5000:5000"
+      - "9600:9600"
+#    networks:
+#      - elk
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: kibana:7.16.1
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./configs/kibana/config.yml:/usr/share/kibana/config/kibana.yml:ro
+#    networks:
+#      - elk
+    ports:
+      - "5601:5601"

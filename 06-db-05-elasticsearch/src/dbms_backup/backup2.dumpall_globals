@@ -1,0 +1,25 @@
+--
+-- PostgreSQL database cluster dump
+--
+
+SET default_transaction_read_only = off;
+
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+
+--
+-- Roles
+--
+
+CREATE ROLE super;
+ALTER ROLE super WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN REPLICATION BYPASSRLS PASSWORD 'md52ed5d4a15b8e2e9cc22a941e4d32b2cf';
+
+
+
+
+
+
+--
+-- PostgreSQL database cluster dump complete
+--
+

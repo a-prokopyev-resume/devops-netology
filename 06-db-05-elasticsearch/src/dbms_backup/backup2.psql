@@ -1,0 +1,185 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 13.12 (Debian 13.12-1.pgdg110+1)
+-- Dumped by pg_dump version 13.12 (Debian 13.12-1.pgdg110+1)
+
+-- Started on 2023-10-24 14:34:40 UTC
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+--
+-- TOC entry 201 (class 1259 OID 16397)
+-- Name: orders; Type: TABLE; Schema: public; Owner: super
+--
+
+CREATE TABLE public.orders (
+    id integer NOT NULL,
+    title character varying(80) NOT NULL,
+    price integer DEFAULT 0 NOT NULL
+)
+PARTITION BY RANGE (price);
+
+
+ALTER TABLE public.orders OWNER TO super;
+
+--
+-- TOC entry 200 (class 1259 OID 16395)
+-- Name: neworders_id_seq; Type: SEQUENCE; Schema: public; Owner: super
+--
+
+CREATE SEQUENCE public.neworders_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.neworders_id_seq OWNER TO super;
+
+--
+-- TOC entry 3013 (class 0 OID 0)
+-- Dependencies: 200
+-- Name: neworders_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: super
+--
+
+ALTER SEQUENCE public.neworders_id_seq OWNED BY public.orders.id;
+
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 202 (class 1259 OID 16404)
+-- Name: orderspart1; Type: TABLE; Schema: public; Owner: super
+--
+
+CREATE TABLE public.orderspart1 (
+    id integer DEFAULT nextval('public.neworders_id_seq'::regclass) NOT NULL,
+    title character varying(80) NOT NULL,
+    price integer DEFAULT 0 NOT NULL
+);
+ALTER TABLE ONLY public.orders ATTACH PARTITION public.orderspart1 FOR VALUES FROM (MINVALUE) TO (500);
+
+
+ALTER TABLE public.orderspart1 OWNER TO super;
+
+--
+-- TOC entry 203 (class 1259 OID 16411)
+-- Name: orderspart2; Type: TABLE; Schema: public; Owner: super
+--
+
+CREATE TABLE public.orderspart2 (
+    id integer DEFAULT nextval('public.neworders_id_seq'::regclass) NOT NULL,
+    title character varying(80) NOT NULL,
+    price integer DEFAULT 0 NOT NULL
+);
+ALTER TABLE ONLY public.orders ATTACH PARTITION public.orderspart2 FOR VALUES FROM (500) TO (MAXVALUE);
+
+
+ALTER TABLE public.orderspart2 OWNER TO super;
+
+--
+-- TOC entry 2861 (class 2604 OID 16400)
+-- Name: orders id; Type: DEFAULT; Schema: public; Owner: super
+--
+
+ALTER TABLE ONLY public.orders ALTER COLUMN id SET DEFAULT nextval('public.neworders_id_seq'::regclass);
+
+
+--
+-- TOC entry 3006 (class 0 OID 16404)
+-- Dependencies: 202
+-- Data for Name: orderspart1; Type: TABLE DATA; Schema: public; Owner: super
+--
+
+INSERT INTO public.orderspart1 (id, title, price) VALUES (1, 'War and peace', 100);
+INSERT INTO public.orderspart1 (id, title, price) VALUES (3, 'Adventure psql time', 300);
+INSERT INTO public.orderspart1 (id, title, price) VALUES (4, 'Server gravity falls', 300);
+INSERT INTO public.orderspart1 (id, title, price) VALUES (5, 'Log gossips', 123);
+INSERT INTO public.orderspart1 (id, title, price) VALUES (7, 'Me and my bash-pet', 499);
+
+
+--
+-- TOC entry 3007 (class 0 OID 16411)
+-- Dependencies: 203
+-- Data for Name: orderspart2; Type: TABLE DATA; Schema: public; Owner: super
+--
+
+INSERT INTO public.orderspart2 (id, title, price) VALUES (2, 'My little database', 500);
+INSERT INTO public.orderspart2 (id, title, price) VALUES (6, 'WAL never lies', 900);
+INSERT INTO public.orderspart2 (id, title, price) VALUES (8, 'Dbiezdmin', 501);
+
+
+--
+-- TOC entry 3014 (class 0 OID 0)
+-- Dependencies: 200
+-- Name: neworders_id_seq; Type: SEQUENCE SET; Schema: public; Owner: super
+--
+
+SELECT pg_catalog.setval('public.neworders_id_seq', 1, false);
+
+
+--
+-- TOC entry 2868 (class 2606 OID 16403)
+-- Name: orders neworders_pkey; Type: CONSTRAINT; Schema: public; Owner: super
+--
+
+ALTER TABLE ONLY public.orders
+    ADD CONSTRAINT neworders_pkey PRIMARY KEY (id, price);
+
+
+--
+-- TOC entry 2870 (class 2606 OID 16410)
+-- Name: orderspart1 orderspart1_pkey; Type: CONSTRAINT; Schema: public; Owner: super
+--
+
+ALTER TABLE ONLY public.orderspart1
+    ADD CONSTRAINT orderspart1_pkey PRIMARY KEY (id, price);
+
+
+--
+-- TOC entry 2872 (class 2606 OID 16417)
+-- Name: orderspart2 orderspart2_pkey; Type: CONSTRAINT; Schema: public; Owner: super
+--
+
+ALTER TABLE ONLY public.orderspart2
+    ADD CONSTRAINT orderspart2_pkey PRIMARY KEY (id, price);
+
+
+--
+-- TOC entry 2873 (class 0 OID 0)
+-- Name: orderspart1_pkey; Type: INDEX ATTACH; Schema: public; Owner: super
+--
+
+ALTER INDEX public.neworders_pkey ATTACH PARTITION public.orderspart1_pkey;
+
+
+--
+-- TOC entry 2874 (class 0 OID 0)
+-- Name: orderspart2_pkey; Type: INDEX ATTACH; Schema: public; Owner: super
+--
+
+ALTER INDEX public.neworders_pkey ATTACH PARTITION public.orderspart2_pkey;
+
+
+-- Completed on 2023-10-24 14:34:40 UTC
+
+--
+-- PostgreSQL database dump complete
+--
+
+ALTER TABLE ORDERS ADD CONSTRAINT orders_tilte_unique UNIQUE (title);
