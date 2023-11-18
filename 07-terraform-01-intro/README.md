@@ -1,4 +1,4 @@
-# Домашнее задание к занятию 1. «Инфраструктура как код»
+# [Домашнее задание](https://github.com/netology-code/virt-homeworks/tree/virt-11/07-terraform-01-intro) к занятию [1. «Инфраструктура как код»](https://netology.ru/profile/program/ter-27/lessons/284423/lesson_items/1529735)
 
 ## Задача 1. Выбор инструментов
 
