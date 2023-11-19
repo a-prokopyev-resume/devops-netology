@@ -22,7 +22,7 @@ variable "generic_metadata" {
   type        = map(string)
   default     = {
     serial-port-enable = "1"
-    ssh-keys          = "ubuntu:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDBYAbng9Yef+LiKnjdi/9kSNhN2Nwvtrqf85GwWNVvgNoZbASh4BL5UEUBCZ61BDR7pPGjg+uNrzdCqjzU23ZKL7BIsmt2kALpaUM8d33UOS5URaVCrM7JHNKGHWxBK4ADbKC4A9FzuYGzu6VOp8muaXE44P99WMu3gqrTvNLcvtO7kk3/gbrHHliFV934A1XmVF6wsatb3KNez1F4bii6PviuFvDZj8x2Y5PBVuwJZzg5ZnTGQN6b8xhhLQLI/C4FWpq7Vqjj093YHmtYuN3VpNP4wOG1BXff6MWFskXNn+Ro3FIcO8ziB1NwHJRcYbOE6fhIz6BtxH/a7kqE9Vwb root@workstation.aulix.com"
+    ssh-keys          = "ubuntu:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDBYAbng9Yef+LiKnjdi/9kSNhN2Nwvtrqf85GwWNVvgNoZbASh4BL5UEUBCZ61BDR7pPGjg+uNrzdCqjzU23ZKL7BIsmt2kALpaUM8d33UOS5URaVCrM7JHNKGHWxBK4ADbKC4A9FzuYGzu6VOp8muaXE44P99WMu3gqrTvNLcvtO7kk3/gbrHHliFV934A1XmVF6wsatb3KNez1F4bii6PviuFvDZj8x2Y5PBVuwJZzg5ZnTGQN6b8xhhLQLI/C4FWpq7Vqjj093YHmtYuN3VpNP4wOG1BXff6MWFskXNn+Ro3FIcO8ziB1NwHJRcYbOE6fhIz6BtxH/a7kqE9Vwb root"
   }
 }
 
@@ -153,8 +153,7 @@ variable "vms_ssh_user" {
 
 variable "vms_ssh_key" {
   type        = string
-#  default     = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCevYq4d0TLF9ExqKeSLBnloK0zFZOzaQq4PrT/lohTUJ6Ff+S9soEbd19wMSncmPOE1lqWB5zjUxqIPYG2YVJmTTDZEtjRQOHUSS9+JgE4ZUjnebrc1dyiVb2SnJoF+b61I5ImOnX9sXcTwbq20nCJx9Fwcqo+f/Aqe+GdSbT3LrI0d2C+m25uSzVZjhofK70bw4vhGMRbwI/C/IBXR0iF4ZDn2/8YEt6FfEEL6kA55OvdStV7db8xBeAfjrXeEBiJehl/oMJ5HZQtmNZ6B6VIYPd5gch+wRhLAqzvyKzE5BES7/eZpJECAena5v+hcwa9KecEdxlQV7jaEUZEZTBv"
-  default     = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDBYAbng9Yef+LiKnjdi/9kSNhN2Nwvtrqf85GwWNVvgNoZbASh4BL5UEUBCZ61BDR7pPGjg+uNrzdCqjzU23ZKL7BIsmt2kALpaUM8d33UOS5URaVCrM7JHNKGHWxBK4ADbKC4A9FzuYGzu6VOp8muaXE44P99WMu3gqrTvNLcvtO7kk3/gbrHHliFV934A1XmVF6wsatb3KNez1F4bii6PviuFvDZj8x2Y5PBVuwJZzg5ZnTGQN6b8xhhLQLI/C4FWpq7Vqjj093YHmtYuN3VpNP4wOG1BXff6MWFskXNn+Ro3FIcO8ziB1NwHJRcYbOE6fhIz6BtxH/a7kqE9Vwb root@workstation.aulix.com"
+  default     = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDBYAbng9Yef+LiKnjdi/9kSNhN2Nwvtrqf85GwWNVvgNoZbASh4BL5UEUBCZ61BDR7pPGjg+uNrzdCqjzU23ZKL7BIsmt2kALpaUM8d33UOS5URaVCrM7JHNKGHWxBK4ADbKC4A9FzuYGzu6VOp8muaXE44P99WMu3gqrTvNLcvtO7kk3/gbrHHliFV934A1XmVF6wsatb3KNez1F4bii6PviuFvDZj8x2Y5PBVuwJZzg5ZnTGQN6b8xhhLQLI/C4FWpq7Vqjj093YHmtYuN3VpNP4wOG1BXff6MWFskXNn+Ro3FIcO8ziB1NwHJRcYbOE6fhIz6BtxH/a7kqE9Vwb root"
   description = "ssh-keygen -t rsa2048"
 }
 */
