@@ -1,0 +1,6 @@
+%{ for g in ansible_host_groups }
+    [${g.group_name}]
+    %{ for i in g.compute_instance_list }
+        ${i.name} ansible_host=${i["network_interface"][0]["nat_ip_address"]}
+    %{ endfor }            
+%{ endfor }
