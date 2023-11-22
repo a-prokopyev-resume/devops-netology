@@ -33,12 +33,6 @@ variable "vpc_name" {
 
 ###common vars
 
-variable "vms_ssh_root_key" {
-  type        = string
-  default     = "your_ssh_ed25519_key"
-  description = "ssh-keygen -t ed25519"
-}
-
 ###example vm_web var
 variable "vm_web_name" {
   type        = string
@@ -53,5 +47,30 @@ variable "vm_db_name" {
   description = "example vm_db_ prefix"
 }
 
+variable "vm_image_family" {
+  type        = string
+  default     = "ubuntu-2004-lts"
+  description = "YC disk image name"
+}
+
+variable "ssh_user" {
+  type        = string
+  default     = "ubuntu"
+  description = "ssh-keygen -t ed25519"
+}
+
+locals {
+  ssh_user="ubuntu"
+  ssh_public_key = "${file(".ssh/ed25519.pub")}"
+}
 
 
+locals { 
+  # Datacenter information
+  datacenter_info  =  {
+    token=var.token
+    cloud_id=var.cloud_id
+    folder_id=var.folder_id
+    default_zone=var.default_zone
+  }
+}
