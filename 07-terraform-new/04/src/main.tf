@@ -11,7 +11,7 @@ resource "yandex_vpc_subnet" "develop" {
 */
 
 module "udjin10-module" {
-  source          = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=main"
+  source          = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=95c286e"
   env_name        = "develop"
   network_id      = module.my_vpc.result.network_id
   subnet_zones    = [ var.default_zone ]

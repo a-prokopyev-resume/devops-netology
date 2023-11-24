@@ -25,12 +25,6 @@ variable "default_cidr" {
   description = "https://cloud.yandex.ru/docs/vpc/operations/subnet-create"
 }
 
-variable "vpc_name" {
-  type        = string
-  default     = "develop"
-  description = "VPC network&subnet name"
-}
-
 ###common vars
 
 ###example vm_web var
@@ -40,12 +34,6 @@ variable "vm_web_name" {
   description = "example vm_web_ prefix"
 }
 
-###example vm_db var
-variable "vm_db_name" {
-  type        = string
-  default     = "netology-develop-platform-db"
-  description = "example vm_db_ prefix"
-}
 
 variable "vm_image_family" {
   type        = string
@@ -53,15 +41,9 @@ variable "vm_image_family" {
   description = "YC disk image name"
 }
 
-variable "ssh_user" {
-  type        = string
-  default     = "ubuntu"
-  description = "ssh-keygen -t ed25519"
-}
 
 locals {
-  ssh_user="ubuntu"
-  ssh_public_key = "${file(".ssh/ed25519.pub")}"
+  ssh_public_key = file(".ssh/ed25519.pub")
 }
 
 
