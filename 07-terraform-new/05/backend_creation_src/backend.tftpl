@@ -1,0 +1,27 @@
+#=== Terraform backend (S3+YDB) generated automatically
+
+terraform {
+
+  backend "s3" {
+    access_key = "${static_access_key.access_key}"
+    secret_key = "${static_access_key.secret_key}"
+
+// The same as:   terraform init -backend-config="access_key=$ACCESS_KEY" -backend-config="secret_key=$SECRET_KEY"
+// On secure prod command line method is preferred
+
+    endpoint = "storage.yandexcloud.net"
+    bucket   = "${bucket}" 
+    
+    region   = "${datacenter_info.zone}"
+    key      = "terraform.tfstate" # remote file name
+
+    skip_region_validation      = true
+    skip_credentials_validation = true
+
+    dynamodb_endpoint = "${ydb.document_api_endpoint}"
+    dynamodb_table    = "terraform_locks"
+
+// Following is for ydb CLI:
+// ydb_full_endpoint = "${ydb.ydb_full_endpoint}"
+
+}
