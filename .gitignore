@@ -12,6 +12,7 @@
 /**/*.hidden
 /**/secrets.yml
 /**/secrets.json
+/**/.secrets
 /**/secrets.tf
 /**/key.json
 /**/authorized_key.json
