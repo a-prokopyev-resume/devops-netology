@@ -10,19 +10,6 @@ resource "yandex_vpc_subnet" "develop" {
 }
 */
 
-backend "s3" {
-  endpoint = "storage.yandexcloud.net"
-  bucket   = "terraform-state"
-  region   = "ru-central1"
-  key      = "terraform.tfstate"
-
-  skip_region_validation      = true
-  skip_credentials_validation = true
-
-  dynamodb_endpoint = ""
-  dynamodb_table    = "terraform-state"
-}
-
 module "udjin10-module" {
   source          = "git::https://github.com/udjin10/yandex_compute_instance.git?ref=main"
   env_name        = "develop"
@@ -32,6 +19,7 @@ module "udjin10-module" {
   instance_name   = var.vm_web_name
   instance_count  = 1
   image_family    = var.vm_image_family 
+  platform        = "standard-v2"
   public_ip       = true
 
   metadata = {

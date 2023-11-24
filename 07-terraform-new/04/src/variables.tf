@@ -16,7 +16,7 @@ variable "folder_id" {
 
 variable "default_zone" {
   type        = string
-  default     = "ru-central1-a"
+  default     = "ru-central1-d"
   description = "https://cloud.yandex.ru/docs/overview/concepts/geo-scope"
 }
 variable "default_cidr" {
@@ -71,6 +71,6 @@ locals {
     token=var.token
     cloud_id=var.cloud_id
     folder_id=var.folder_id
-    default_zone=var.default_zone
+    zone=var.default_zone
   }
 }
