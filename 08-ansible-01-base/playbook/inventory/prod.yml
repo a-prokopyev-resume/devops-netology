@@ -1,0 +1,18 @@
+---
+  el:
+    hosts:
+      centos7:
+        ansible_connection: docker
+  deb:
+    hosts:
+      ubuntu:
+        ansible_connection: docker
+  local:
+      hosts:
+        test-netology:
+          ansible_connection: local
+  fd:
+    hosts:
+      fedora:
+        ansible_connection: docker       
+        
