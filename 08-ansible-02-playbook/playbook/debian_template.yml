@@ -1,0 +1,138 @@
+---
+#====================================== The Beginning of the Copyright Notice ============================================================
+# The AUTHOR of this file and the owner of all exclusive rights in this file is Alexander Borisovich Prokopyev
+# born on December 20, 1977 resident of the city of Kurgan, Russia;
+# Series and Russian passport number of the AUTHOR (only the last two digits for each one): **22-****91
+# Russian Individual Taxpayer Number of the AUTHOR (only the last four digits): ********2007
+# Russian Insurance Number of Individual Ledger Account of the AUTHOR (only the last five digits): ***-***-859 04
+# Copyright (C) Alexander B. Prokopyev, 2023, All Rights Reserved.
+# Contact of the AUTHOR: a.prokopyev.resume at gmail dot com
+#
+# All source code and other content contained in this file is protected by copyright law.
+# This file is licensed by the AUTHOR under AGPL v3 (GNU Affero General Public License): https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# THIS FILE IS LICENSED ONLY PROVIDED FOLLOWING RESTRICTIONS ALSO APPLY:
+# Nobody except the AUTHOR may alter or remove this copyright notice from any legal copies of this file content.
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+#
+# ATTENTION: If potential user's country laws are not compatible or collide with the terms of this copyright notice or if a potential user
+# does not agree with the terms of this copyright notice then such potential user is strongly prohibited to use this file by any method.
+#=================================== The End of the Copyright Notice =====================================================================
+
+- name: Prepare Debian image - play1
+  hosts: self
+  tasks:
+    - name: Run template container
+      community.docker.docker_container:
+        name: debian_template
+        image: python:3.9.18-slim-bullseye # or bookworm
+        detach: true
+        cleanup: true
+        command: sleep 100h # without init
+
+- name: Prepare Debian image - play2
+  hosts: debian_template
+  tasks:
+    - name: Provisioning template container
+      ansible.builtin.apt:
+        name:
+          - gpg
+          - curl
+          - joe
+          - mc
+          - htop
+          - rsyslog
+          - systemd # for starting multiple processes as services in a Docker container
+        #           - openrc
+        #           - s6
+        #           - sysvinit-core
+        #           - dump-init
+        #           - tini
+        #           - finit-sysv
+        #           - finit
+        state: present
+        update_cache: true
+        autoclean: true
+
+    - name: Replace systemctl.py
+      ansible.builtin.copy:
+        src: "files/systemctl3.py"
+        dest: "/bin/systemctl"
+        mode: "0755"
+
+    - name: Add journalctl.py
+      ansible.builtin.copy:
+        src: "files/journalctl3.py"
+        dest: "/bin/journalctl"
+        mode: "0755"
+
+    - name: Add Clickhouse repository key
+      ansible.builtin.apt_key:
+        keyserver: keyserver.ubuntu.com
+        id: E0C56BD4
+        state: present
+
+    - name: Add ClickHouse repository
+      ansible.builtin.apt_repository:
+        repo: deb http://repo.yandex.ru/clickhouse/deb/stable/ main/
+        state: present
+        filename: clickhouse
+
+    - name: Install Clickhouse packages
+      ansible.builtin.apt:
+        name: "{{ item }}={{ ClickhouseVersion }}"
+        state: latest
+        allow_downgrades: true
+        update_cache: true
+        autoclean: true
+      with_items: "{{ ClickhousePackages }}"
+
+    - name: Disable Clickhouse service
+      ansible.builtin.systemd:
+        name: clickhouse-server
+        enabled: false
+        state: stopped
+
+    - name: Add Vector package repository
+      ansible.builtin.shell: bash -c "$(curl -L https://setup.vector.dev)"
+
+    - name: Install Vector package
+      ansible.builtin.apt:
+        name: vector
+        state: present
+        autoclean: true
+        update_cache: true
+#      changed_when: false
+#      - name: Create systemd unit for Vector
+#        copy:
+#          src: files/vector.service
+#          dest: /etc/systemd/system
+#          mode: 0744
+
+    - name: Disable Vector service
+      ansible.builtin.systemd:
+        name: vector
+        enabled: false
+        state: stopped
+
+- name: Prepare Debian image - play3
+  hosts: self
+  tasks:
+    - name: Commit template container as debian_clickhouse:latest image
+      #       community.docker.docker_container:
+      #          container: debian_template
+      #          name: "debian_template"
+      #          image: "debian_clickhouse:latest"
+      #          commit: yes
+      #          commit_message: from Ansible task
+      #          author: Alexander B. Prokopyev (Netology student solving 08-ansible-02-playbook)
+      ansible.builtin.command: docker commit debian_template debian_clickhouse:latest
+    - name: Remove template container
+      community.docker.docker_container:
+        name: debian_template
+        state: absent
+#       register: container_info
+
+#     - name: Allow usage of legacy Debian release
+#       shell: apt-get --allow-releaseinfo-change update

@@ -58,15 +58,16 @@ docker run -d --name centos7 pycontribs/centos:7 sleep 100h
 ![](images/task2_1.png)
 2. Шифрую отдельное значение `PaSSw0rd` для переменной `some_fact` паролем `netology`:
 `(echo ---; echo -n "  some_fact: "; ansible-vault encrypt_string PaSSw0rd ) > group_vars/all/examp.yml`
-3. Проверил запуском playbook.
-4. Добавление новой группы хостов `fd`:.
+3. Проверил запуском playbook:
+![](images/task2_3.png)
+4. Добавление новой группы хостов `fd`:
 ```
   fd:
     hosts:
       fedora:
         ansible_connection: docker       
 ```        
-5. Скрипт для автоматизации поднятия необходимых контейнеров, запуск ansible-playbook и остановку контейнеров.
+1. Скрипт для автоматизации поднятия необходимых контейнеров, запуск ansible-playbook и остановку контейнеров.
 
 В связи с тем, что задание необязательное, немного изменил условия задачи и написал скрипт на `python3` вместо `bash`, потому что мне там больше (чем в bash) нравится работа с массивами:
 ```python3
@@ -96,3 +97,34 @@ for E in Envs:
   os.system(f'docker stop {Name}');
 ```
 ![](images/task2_5.png)
+
+Второй вариант с использованием массива записей вместо вложенных ассоциативных массивов:
+```
+#!/usr/bin/env python3
+
+import os
+from dataclasses import dataclass
+
+@dataclass
+class Container:
+    name: str
+    image: str
+
+Envs = {
+  "ub": Container("ubuntu", "pycontribs/ubuntu"),
+  "el": Container("centos7", "pycontribs/centos:7"),
+  "fd": Container( "fedora", "pycontribs/fedora")
+}
+
+for E in Envs:
+  Name=Envs[E].name;
+  Image=Envs[E].image;
+  print(Name, Image);
+  os.system(f"docker run -dit --name {Envs[E].name} {Envs[E].image} sleep 100h");
+
+os.system("ansible-playbook -i inventory/prod.yml site.yml --vault-password-file .secrets")
+
+for E in Envs:
+  print(Name, Image);
+  os.system(f"docker stop {Envs[E].name}");
+```

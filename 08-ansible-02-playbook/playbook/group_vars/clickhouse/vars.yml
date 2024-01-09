@@ -1,0 +1,22 @@
+---
+# Old CPU does not have an SSE4.2 instruction support for more recent versions
+#clickhouse_version:  "22.3.3.44"
+
+#clickhouse_packages:
+#  - clickhouse-client=18.16.1+ds-7.2+deb11u1
+#  - clickhouse-server=18.16.1+ds-7.2+deb11u1
+#  - clickhouse-common-static=18.16.1+ds-7.2+deb11u1
+
+clickhouse_packages:
+  - clickhouse-client
+  - clickhouse-server
+#  - clickhouse-common-static
+
+clickhouse_version: 18.16.1+ds-7.2+deb11u1
+
+clickhouse_packages_with_versions:
+  - clickhouse-client="{{ clickhouse_version }}"
+  - clickhouse-server="{{ clickhouse_version }}"
+#  - clickhouse-common-static="{{ clickhouse_version }}"
+
+

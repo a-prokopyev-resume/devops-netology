@@ -1,0 +1,54 @@
+---
+#clickhouse:
+#  hosts:
+#    clickhouse-01:
+#      ansible_host: <IP_here>
+
+self:
+    hosts:
+      localhost:
+        ansible_connection: local
+
+clickhouse:
+    hosts:
+      clickhouse-01:
+        ansible_connection: docker
+#      clickhouse-02:
+#       ansible_connection: docker
+
+vector:
+    hosts:
+      vector-01:
+        ansible_connection: docker
+#      vector-02:
+#        ansible_connection: docker
+#      vector-03:
+#        ansible_connection: docker
+
+docker_templates:
+    hosts:
+      debian_template:
+        ansible_connection: docker
+#      ubuntu:
+#        ansible_connection: docker
+
+#       ansible_connection: docker
+#         Uses Docker exec to execute Ansible modules inside running containers
+#         Requires Python to be installed in the container
+#         More limited in functionality compared to docker-api
+#         Simpler to get started as it piggybacks on Docker exec
+
+#       ansible_connection: docker-api
+#         Uses the Docker SDK for Python (docker-py) to connect directly to the Docker daemon API
+#         Does not require Python or SSH to be installed in the container
+#         More low-level control over Docker resources
+#         Ideal for working with minimal containers
+
+
+#group123:
+#  hosts:
+#    host-01:
+#      ansible_connection: ssh
+#      ansible_ssh_user: root
+#      ansible_host: xxx
+#      ansible_private_key_file: ~/.ssh/id_ed25519

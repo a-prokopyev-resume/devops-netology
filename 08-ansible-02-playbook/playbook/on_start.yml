@@ -1,0 +1,32 @@
+---
+- name: Prepare target Debian hosts  play
+  hosts: self
+  tasks:
+    - name: Check if debian_init:latest image exists
+      community.docker.docker_image_info:
+        name: debian_clickhouse:latest
+      register: image_info
+
+    - name: Build image if it does not exist yet
+      ansible.builtin.include_tasks: debian_template.yml
+      when: not image_info.images
+
+    - name: Stop and remove old containers at the beginning of the play
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+        force_kill: true
+      loop: "{{ CommonGroup }}"
+
+    - name: Run required Debian containers on the localhost
+      community.docker.docker_container:
+        name: "{{ item }}"
+        image: debian_clickhouse
+        detach: true
+        cleanup: true
+        command: /bin/systemctl
+      loop: "{{ CommonGroup }}"
+
+#      - name: Define common group
+#        set_fact:
+#          CommonGroup: "{{ groups['clickhouse'] | union(groups['vector']) }}"

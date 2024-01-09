@@ -1,0 +1,18 @@
+---
+  - name: Destroy target hosts
+    hosts: self
+    tasks:
+      - name: Stop and remove container at the beginning of the play
+        community.docker.docker_container:
+          name: "{{ item }}" #debian
+          state: absent
+          force_kill: yes
+#          ignore_errors: true
+        loop: "{{ CommonGroup }}" 
+       
+#      - name: Stop and remove container at the beginning of the play
+#        community.docker.docker_container:
+#          name: ubuntu
+#          state: absent
+#          force_kill: yes
+
