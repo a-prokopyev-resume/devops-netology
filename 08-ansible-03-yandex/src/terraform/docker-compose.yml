@@ -1,0 +1,30 @@
+---
+version: '3.7'
+services:
+  app1:
+    container_name: python1
+    image: python:3.9.18-slim-bullseye
+    command: sleep 1h
+#    detach: true
+    ports:
+      - "80:80"
+    restart: always
+  app2:
+    container_name: redis1
+    image: redis
+    command: sleep 1h    
+#    detach: true
+    restart: always
+#    volumes:
+#      - /mnt/logs:/logs
+#      - /mnt/data:/data
+
+#x-yc-disks:
+#  - device_name: compute-disk-data
+#    fs_type: ext4
+#    host_path: /mnt/data
+#    partition: 1
+#  - device_name: compute-disk-data
+#    fs_type: ext4
+#    host_path: /mnt/logs
+#    partition: 2

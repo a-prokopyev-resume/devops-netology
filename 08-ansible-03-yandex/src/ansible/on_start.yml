@@ -1,0 +1,102 @@
+#====================================== The Beginning of the Copyright Notice ============================================================
+# The AUTHOR of this file and the owner of all exclusive rights in this file is Alexander Borisovich Prokopyev
+# born on December 20, 1977 resident of the city of Kurgan, Russia;
+# Series and Russian passport number of the AUTHOR (only the last two digits for each one): **22-****91
+# Russian Individual Taxpayer Number of the AUTHOR (only the last four digits): ********2007
+# Russian Insurance Number of Individual Ledger Account of the AUTHOR (only the last five digits): ***-***-859 04
+# Copyright (C) Alexander B. Prokopyev, 2024, All Rights Reserved.
+# Contact of the AUTHOR: a.prokopyev.resume at gmail dot com
+#
+# All source code and other content contained in this file is protected by copyright law.
+# This file is licensed by the AUTHOR under AGPL v3 (GNU Affero General Public License): https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# THIS FILE IS LICENSED ONLY PROVIDED FOLLOWING RESTRICTIONS ALSO APPLY:
+# Nobody except the AUTHOR may alter or remove this copyright notice from any copies of this file content (including modified fragments).
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+#
+# ATTENTION: If potential user's country laws are not compatible or collide with the terms of this copyright notice or if a potential user
+# does not agree with the terms of this copyright notice then such potential user is strongly prohibited to use this file by any method.
+#=================================== The End of the Copyright Notice =====================================================================
+
+
+---
+- name: Create runners using Terraform - Play
+  hosts: localhost
+  tasks:
+    - name: Create runner's VMs using Terraform module
+      community.general.terraform:
+        project_path: ../terraform
+        state: present
+      register: terraform
+
+    - name: Get IP addresses of new VMs created by Terraform module
+      ansible.builtin.set_fact:
+        vm_ips: "{{ terraform.outputs.vm_ips.value }}"
+
+    - name: Get SSH user name for new VMs created by Terraform module
+      ansible.builtin.set_fact:
+        vm_ssh_user_name: "{{ terraform.outputs.vm_ssh_user_name.value }}"
+
+    - name: Print IP
+      ansible.builtin.debug:
+        msg: IP addresses are {{ vm_ips }}
+
+#      - name: Add new hosts to inventory dynamically
+#        add_host:
+#          name: "{{ item }}" # hostname
+#          ansible_user: "{{ vm_ssh_user_name }}"
+#          ansible_ssh_host: "{{ item }}"
+#          ansible_ssh_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+#          ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+#          groups: docker_runners
+#        loop: "{{ vm_ips }}"
+
+- name: Create template container image if it is missing yet - executing tasks on docker runner host (only one host for now)
+  hosts: runner1
+  tasks:
+    - name: Wait for system to become reachable
+      ansible.builtin.wait_for_connection:
+
+    - name: Check if debian_clickhouse:latest image exists
+      community.docker.docker_image_info:
+        name: debian_clickhouse:latest
+      register: image_info
+
+    - name: Build image if it does not exist yet
+      ansible.builtin.include_tasks: debian_template.yml # Build template container image
+      when: not image_info.images
+
+    - name: Stop and remove old containers at the beginning of the play
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+        force_kill: true
+      loop: "{{ CommonGroup }}"
+
+    - name: Run required Debian containers on the localhost
+      community.docker.docker_container:
+        name: "{{ item }}"
+        image: debian_clickhouse
+        detach: true
+        cleanup: true
+        command: /bin/systemctl
+      loop: "{{ CommonGroup }}"
+
+# =====> UNUSED Examples:
+
+#      - name: Get IP addresses of new VMs created by Terraform module
+#        set_fact:
+#          vm_ips: "{{ lookup('file', '../terraform/terraform.tfstate') | from_json | json_query('outputs.instance_ips.value[]') }}"
+
+#      - name: Define common group
+#        set_fact:
+#          CommonGroup: "{{ groups['clickhouse'] | union(groups['vector']) }}"
+
+#      - name: Wait for SSH to start on the runner hosts
+#        wait_for:
+##         host: "{{ ansible_host }}"
+#          port: 22
+#          delay: 10
+#          timeout: 60
+#          state: started

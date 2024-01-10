@@ -1,0 +1,21 @@
+---
+
+CommonGroup: "{{ groups['clickhouse'] | union(groups['vector']) | union(groups['lighthouse']) }}"
+
+ClickhousePackages:
+  - clickhouse-client
+  - clickhouse-server
+#  - clickhouse-common-static
+
+ClickhouseVersion: 18.16.1+ds-7.2+deb11u1
+
+#clickhouse_packages_with_versions:
+#  - clickhouse-client="{{ clickhouse_version }}"
+#  - clickhouse-server="{{ clickhouse_version }}"
+#  - clickhouse-common-static="{{ clickhouse_version }}"
+
+LighthouseGithub: "https://github.com/VKCOM/lighthouse.git"
+
+
+
+

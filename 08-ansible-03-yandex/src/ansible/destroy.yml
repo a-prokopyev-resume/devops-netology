@@ -1,0 +1,10 @@
+---
+  - name: Cleanup Play
+    hosts: localhost
+    tasks:
+
+      - name: Destroy runners using Terraform module
+        terraform:
+          project_path: ../terraform
+          state: absent          
+
