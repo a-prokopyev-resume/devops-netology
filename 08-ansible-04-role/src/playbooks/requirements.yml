@@ -1,0 +1,27 @@
+#collections:
+#  - alex_pro.debian_clickhouse
+
+collections:
+  - name: alex_pro.debian_clickhouse # Single local collection
+    source: ../collections/alex_pro/debian_clickhouse/
+    type: dir
+  
+#  - name: alex_pro # All collections in the whole namespace
+#    source: ../collections/alex_pro/
+#    type: subdirs
+
+# from a webserver, where the role is packaged in a tar.gz
+# - name: http-role-gz
+#   src: https://some.webserver.example.com/files/master.tar.gz
+
+#  - name: /tmp/my_namespace-my_collection-1.0.0.tar.gz
+#    type: file
+
+#  - name: xxx.yyy
+#    url: 'https://github.com/xxx/yyy/releases/download/1.2.3/xxx-yyy_collection-1.2.3.tar.gz'
+#    version: 1.2.3
+
+#  - name: https://github.com/ansible/ansible-examples/blob/master/ansible-collection.tar.gz
+#    type: url
+#    version: 1.0.0
+

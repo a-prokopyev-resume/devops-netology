@@ -1,0 +1,33 @@
+---
+  - name: ClickHouse
+    hosts: clickhouse
+    tasks:
+      - include_role:
+          name: alex_pro.debian_clickhouse.clickhouse
+        vars:
+          var1: "value1"
+
+  - name: LightHouse
+    hosts: lighthouse
+    tasks:
+      - include_role:
+          name: alex_pro.debian_clickhouse.lighthouse
+        vars:
+          var1: "value1"
+
+  - name: Vector
+    hosts: vector
+    tasks:
+      - include_role:
+          name: alex_pro.debian_clickhouse.vector
+        vars:
+          var1: "value1"
+
+# =====> UNUSED Examples:
+
+#      - name: Import a role
+#        ansible.builtin.import_role:
+#          name: alex_pro.debian_clickhouse.vector
+
+# collections:
+#  - alex_pro.debian_clickhouse

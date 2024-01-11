@@ -1,0 +1,69 @@
+---
+self:
+    hosts:
+      localhost:
+        ansible_connection: local
+
+clickhouse:
+    hosts:
+      clickhouse-01:
+        ansible_connection: docker
+        ansible_docker_extra_args: "-H unix:///tmp/docker.sock"
+#      clickhouse-02:
+#       ansible_connection: docker
+
+vector:
+    hosts:
+      vector-01:
+        ansible_connection: docker
+        ansible_docker_extra_args: "-H unix:///tmp/docker.sock"
+#      vector-02:
+#        ansible_connection: docker
+#      vector-03:
+#        ansible_connection: docker
+
+lighthouse:
+    hosts:
+      lighthouse-01:
+        ansible_connection: docker
+        ansible_docker_extra_args: "-H unix:///tmp/docker.sock"
+
+docker_runners:
+    hosts:
+      runner1:
+        ansible_connection: ssh
+        ansible_ssh_user: ubuntu
+        ansible_host: 158.160.139.192
+        ansible_private_key_file: ~/.ssh/id_ed25519
+        ansible_ssh_common_args: -o ControlMaster=auto -o ControlPersist=60s
+        become: true
+
+docker_templates:
+    hosts:
+      debian_template:
+        ansible_connection: docker
+        ansible_docker_extra_args: "-H unix:///tmp/docker.sock"
+
+#      ubuntu:
+#        ansible_connection: docker
+
+#       ansible_connection: docker
+#         Uses Docker exec to execute Ansible modules inside running containers
+#         Requires Python to be installed in the container
+#         More limited in functionality compared to docker-api
+#         Simpler to get started as it piggybacks on Docker exec
+
+#       ansible_connection: docker-api
+#         Uses the Docker SDK for Python (docker-py) to connect directly to the Docker daemon API
+#         Does not require Python or SSH to be installed in the container
+#         More low-level control over Docker resources
+#         Ideal for working with minimal containers
+
+
+#ssh_hosts_example:
+#  hosts:
+#    host-01:
+#      ansible_connection: ssh
+#      ansible_ssh_user: root
+#      ansible_host: xxx
+#      ansible_private_key_file: ~/.ssh/id_ed25519

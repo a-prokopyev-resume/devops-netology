@@ -1,0 +1,6 @@
+dependencies:
+  collections:
+    - name: alex_pro.debian_clickhouse1
+      version: 1.0.0
+      source: ../../collections/alex_pro/debian_clickhouse
+      

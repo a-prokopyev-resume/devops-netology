@@ -1,0 +1,12 @@
+---
+- name: Create Vector config by template
+  ansible.builtin.template:
+    src: vector.toml.j2
+    dest: /etc/vector/vector.toml
+    mode: "0644"
+
+- name: Enable and start Vector service
+  ansible.builtin.systemd:
+    name: vector
+    enabled: true
+    state: started
