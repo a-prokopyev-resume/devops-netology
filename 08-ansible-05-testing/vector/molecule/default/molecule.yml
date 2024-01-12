@@ -1,0 +1,29 @@
+---
+dependency:
+  name: galaxy
+#role_name_check: 1
+driver:
+  name: podman
+#lint: |
+#  ansible-lint .
+#  yamllint .
+platforms:
+#  - name: molecule_ubuntu
+#    image: docker.io/pycontribs/ubuntu:latest
+#    pre_build_image: true
+#  - name: molecule_fedora
+#    image: docker.io/pycontribs/fedora:latest
+#    pre_build_image: true
+  - name: molecule_debian
+    image: docker.io/pycontribs/debian:latest
+    pre_build_image: true
+provisioner:
+  name: ansible
+verifier:
+  name: ansible
+scenario:
+  test_sequence:
+    - destroy
+    - create
+    - converge
+    - destroy 
