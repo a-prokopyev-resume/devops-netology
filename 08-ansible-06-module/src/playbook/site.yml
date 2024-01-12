@@ -1,0 +1,26 @@
+- name: Test my own Python module
+  hosts: localhost
+  tasks:
+#    - name: Write file
+#      alex_pro.netology.work6:
+#      work6:
+#        path: /tmp/hello.txt
+#        content: Hello World!
+
+#    - name: Run local role as a task
+#      include_role:
+#        name: work6_role
+#      vars:
+#        - myrole_path: /tmp/hello2.txt
+#        - myrole_content: Super Hello World!
+
+    - name: Run role from collection as a task
+      include_role:
+        name: alex_pro.netology.work6_role
+      vars:
+        - myrole_path: /tmp/hello2.txt
+        - myrole_content: Super Hello World!
+        
+    - name: Verify by means of Ansible built-ins an earlier written file content
+      debug: 
+         msg: "{{ lookup('file', '/tmp/hello2.txt') }}"

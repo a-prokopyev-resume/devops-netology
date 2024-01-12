@@ -1,0 +1,4 @@
+---
+# defaults file for work6_role
+myrole_path: /tmp/hello.txt
+myrole_content: Hello World!

@@ -1,0 +1,10 @@
+- name: Debug
+  debug:
+    msg: 
+      - "{{ myrole_path }}"
+      - "{{ myrole_content }}"
+
+- name: Write file
+  alex_pro.netology.work6:
+    path: "{{ myrole_path }}"
+    content: "{{ myrole_content }}"
