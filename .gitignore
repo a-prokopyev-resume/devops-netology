@@ -16,7 +16,9 @@
 /**/.secrets
 /**/secrets.tf
 /**/terraform.tfstate*
+/**/personal.auto.tfvars
 /**/.terraform
 /**/key.json
 /**/authorized_key.json
 .timestamp
+

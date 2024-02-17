@@ -1,0 +1,24 @@
+- name: Get PostgreSQL installed
+  hosts: postgres
+  become: true
+  tasks:
+#    - name: Change repo file
+#      copy:
+#        src: CentOS-Base.repo
+#        dest: /etc/yum.repos.d/CentOS-Base.repo
+#        mode: 0644
+#        owner: root
+#        group: root
+
+    - name: Install PostgreSQL repos
+      yum:
+        name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+#        yes | yum install https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+#        yes | yum install postgresql11-server postgresql11
+        state: present
+        validate_certs: false
+
+    - name: Install PostgreSQL
+      yum:
+        name: "postgresql13-server"
+        state: present

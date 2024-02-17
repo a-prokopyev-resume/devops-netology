@@ -1,0 +1,14 @@
+---
+- name: Wait for hosts to get started
+  #hosts: sonar-01, nexus-01
+  hosts: all
+  tasks:
+  
+    - name: Wait a few seconds more
+      ansible.builtin.shell: sleep 5s
+  
+    - name: Wait for systems to become reachable
+      ansible.builtin.wait_for_connection:
+      
+    - name: Wait a few seconds more
+      ansible.builtin.shell: sleep 5s

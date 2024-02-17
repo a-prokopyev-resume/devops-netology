@@ -1,0 +1,198 @@
+#=============================================== The Beginning of the Copyright Notice ===================================================
+# The AUTHOR of this file and the owner of all exclusive rights in this file is Alexander Borisovich Prokopyev
+# born on December 20, 1977 resident of the city of Kurgan, Russia;
+# Series and Russian passport number of the AUTHOR (only the last two digits for each one): **22-****91
+# Russian Individual Taxpayer Number of the AUTHOR (only the last four digits): ********2007
+# Russian Insurance Number of Individual Ledger Account of the AUTHOR (only the last five digits): ***-***-859 04
+# Copyright (C) Alexander B. Prokopyev, 2024, All Rights Reserved.
+# Contact of the AUTHOR: a.prokopyev.resume at gmail dot com
+#
+# All source code and other content contained in this file is protected by copyright law.
+# This file is licensed by the AUTHOR under AGPL v3 (GNU Affero General Public License): https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# THIS FILE IS LICENSED ONLY PROVIDED FOLLOWING RESTRICTIONS ALSO APPLY:
+# Nobody except the AUTHOR may alter or remove this copyright notice from any copies of this file content (including modified fragments).
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+#
+# ATTENTION: If potential user's or licensee's country laws collide or are not compatible with the terms of this copyright notice or 
+# if a potential user or licensee does not agree with the terms of this copyright notice then such potential user or licensee  
+# is STRONGLY PROHIBITED to use this file by any method.
+#================================================== The End of the Copyright Notice ======================================================
+
+
+
+---
+- name: Create VMs - Play
+  hosts: localhost
+  tasks:
+    
+    - name: Generate Ed25519 SSH key
+      ansible.builtin.openssh_keypair:
+        path: "~/.ssh/id_ed25519"
+        type: "ed25519"
+
+    - name: Restore original inventory template
+      copy:
+        src: ~/.ssh/id_ed25519.pub
+        dest: ./infrastructure/files/id_rsa.pub
+
+    - name: Destroy old VMs by Terraform
+      community.general.terraform:
+        project_path: ../terraform
+        state: absent
+      tags: 
+        - destroy
+        - terraform
+
+    - name: Set default value for variable using set_fact
+      set_fact:
+        TF_State: "{{ TF_State | default('present') }}"
+#    - name: Print TF_State
+#      ansible.builtin.debug:
+#        msg: "Requested Terraform state: {{ TF_State }}"
+
+    - name: Create VMs by Terraform
+      community.general.terraform:
+        project_path: ../terraform
+        state: present
+#"{{ TF_State }}"        
+        complex_vars: true
+        variables:
+          group="work-09-ci-03-cicd"
+          image_family="centos-7"
+          cores=2
+          ram=4
+          amount=2
+      register: TerraformResult
+      tags: 
+        - create
+        - terraform      
+
+
+
+#         image_id="fd8jgp0eknedm0jorvp7"
+
+    - name: Get IP addresses of new VMs created by Terraform module
+      ansible.builtin.set_fact:
+        vm_ips: "{{ TerraformResult.outputs.vm_ips.value }}"
+
+    - name: Get SSH user name for new VMs created by Terraform module
+      ansible.builtin.set_fact:
+        vm_ssh_user_name: "{{ TerraformResult.outputs.vm_ssh_user_name.value }}"
+
+    - name: Print IP
+      ansible.builtin.debug:
+        msg: "IP addresses are {{ vm_ips }}"
+#        msg: "The first IP address is {{ vm_ips[0] }}"
+
+    - name: Restore original inventory template
+      copy:
+        src: ./infrastructure/inventory/cicd/hosts.yml.bak
+        dest: ./infrastructure/inventory/cicd/hosts.yml
+
+    - name: Update host1 value in lesson inventory
+      ansible.builtin.lineinfile:
+        path: ./infrastructure/inventory/cicd/hosts.yml
+        regexp: '^(\s*)ansible_host:\s*<somehost>'
+        line: '\1ansible_host: nexus'
+        backrefs: yes
+
+    - name: Update host2 value in lesson inventory
+      ansible.builtin.lineinfile:
+        path: ./infrastructure/inventory/cicd/hosts.yml
+        regexp: '^(\s*)ansible_host:\s*<somehost2>'
+        line: '\1ansible_host: sonar'
+        backrefs: yes
+
+    - name: Update ansible_user value in lesson inventory
+      ansible.builtin.lineinfile:
+        path: ./infrastructure/inventory/cicd/hosts.yml
+        regexp: '^(\s*)ansible_user:\s*<someuser>'
+        line: '\1ansible_user: {{ vm_ssh_user_name }}'
+        backrefs: yes
+
+    - name: Update /etc/hosts2 file
+      ansible.builtin.copy:
+        content: |
+          {{ vm_ips[0] }} nexus
+          {{ vm_ips[1] }} sonar
+        dest: /etc/hosts2
+
+    - name: Update /etc/hosts file
+      ansible.builtin.shell: cp /etc/hosts2 /etc/hosts
+
+    - name: Update /etc/ssh/ssh_config file
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/ssh_config
+        create: yes
+        line: |
+          StrictHostKeyChecking no
+          UserKnownHostsFile /dev/null
+          Host nexus sonar
+            User netology
+
+
+    - name: Execute playbook for waiting hosts to get started
+      ansible.builtin.shell: ansible-playbook -i infrastructure/inventory/cicd/hosts.yml wait.yml
+      register: AnsibleResult1
+      
+    - name: Print execution results
+      ansible.builtin.debug:
+        msg:  "{{ AnsibleResult1 }}"
+      
+
+    - name: Execute lesson infrastructure playbook for installing required CI/CD services
+      ansible.builtin.shell: ansible-playbook -i infrastructure/inventory/cicd/hosts.yml infrastructure/site.yml
+#      ansible.builtin.shell: ansible-playbook -i infrastructure/inventory/cicd/hosts.yml infrastructure/test.yml
+      register: AnsibleResult2
+      tags: 
+        - provision
+
+    - name: Print execution results
+      ansible.builtin.debug:
+        msg:  "{{ AnsibleResult2 }}"
+      tags: 
+        - provision
+
+
+#    - name: Execute playbook for waiting hosts to get started
+#      ansible.builtin.include_tasks: 
+#        file: wait.yml
+
+
+
+# =====> UNUSED Examples:
+
+#      - name: Get IP addresses of new VMs created by Terraform module
+#        set_fact:
+#          vm_ips: "{{ lookup('file', '../terraform/terraform.tfstate') | from_json | json_query('outputs.instance_ips.value[]') }}"
+
+#      - name: Define common group
+#        set_fact:
+#          CommonGroup: "{{ groups['clickhouse'] | union(groups['vector']) }}"
+
+#      - name: Wait for SSH to start on the runner hosts
+#        wait_for:
+##         host: "{{ ansible_host }}"
+#          port: 22
+#          delay: 10
+#          timeout: 60
+#          state: started
+
+
+#      - name: Add new hosts to inventory dynamically
+#        add_host:
+#          name: "{{ item }}" # hostname
+#          ansible_user: "{{ vm_ssh_user_name }}"
+#          ansible_ssh_host: "{{ item }}"
+#          ansible_ssh_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+#          ansible_ssh_private_key_file: ~/.ssh/id_ed25519
+#          groups: docker_runners
+#        loop: "{{ vm_ips }}"
+
+#- name: Wait for hosts to get started
+#  hosts: runner1
+#  tasks:
+#    - name: Wait for system to become reachable
+#      ansible.builtin.wait_for_connection:
