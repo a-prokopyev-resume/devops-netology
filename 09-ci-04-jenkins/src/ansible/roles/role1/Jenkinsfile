@@ -1,0 +1,36 @@
+pipeline {
+
+    agent {
+        node {
+            label 'agent'
+        }
+    }
+
+    stages {
+        
+        stage('St1_checkout') {
+            steps {
+	            echo 'Cloning GIT repository'
+	            git url: 'https://github.com/a-prokopyev-resume/devops-netology.git', branch: 'main'
+            }
+        }
+
+        stage('St2_prerequisites') {
+            steps {
+                echo 'Installing required Python packages'
+                sh 'pip install "molecule[lint]"'
+                sh 'pip install "molecule[docker,lint]"'
+                sh 'pip install ansible-lint docker'
+                sh 'yes | pip3 uninstall molecule-podman' // Is it needed yet?
+            }
+        }
+
+        stage('Starting molecule test') {
+            steps {
+                echo 'Running molecule test finally!'
+                sh 'cd 09-ci-04-jenkins/src/ansible/roles/role1; molecule test'
+            }
+        }
+
+    }
+}

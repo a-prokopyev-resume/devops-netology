@@ -77,6 +77,13 @@ variable "image_family" {
   description = "YC disk image name"
 }
 
+variable "is_temporary" {
+  type		= bool
+  default	= true
+  description = "Indicates that VM is proviosioned for one day only which is more economical (its price is less)."
+}
+
+
 # =====> Seldom changed parameters defined locally in this file
 
 locals { 
@@ -94,6 +101,7 @@ locals {
     platform_id = "standard-v3"
     amount = var.amount
     ram = var.ram
+    preemptible = var.is_temporary
     group =  (var.group == "") ? "yandex-yml-${formatdate("YYYY-MM-DD", timestamp())}" : var.group
     
     cores  = var.cores

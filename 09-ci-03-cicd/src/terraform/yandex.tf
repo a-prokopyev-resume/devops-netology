@@ -99,14 +99,19 @@ resource "yandex_compute_instance_group" "containers" {
     }
 
     scheduling_policy {
-      preemptible = true
+      preemptible = local.vm_config.preemptible
     }
 
     boot_disk {
       mode = "READ_WRITE"
       initialize_params {
         image_id = data.yandex_compute_image.main.id
-#        size = local.vm_config.disk_size
+ #       type     = "network-ssd" # allows smaller size, but is about 1.5-2 times slower than two following SSD types
+
+        size = 93 # shell be N*93 (Mb)
+        type = "network-ssd-nonreplicated" # at least 93M, the most FAST !
+#       type     = "network-ssd-io-m3" # at least 93M, FAST !
+#       size = local.vm_config.disk_size
       }
     }
     network_interface {

@@ -1,0 +1,77 @@
+---
+- name: Wait for hosts to get started
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Wait for systems to become reachable
+      ansible.builtin.wait_for_connection:
+        delay: 1
+        connect_timeout: 10
+        sleep: 5
+        timeout: 60
+
+- name: Do some pre provision tasks like upgrading preinstalled packages, etc.
+  hosts: all
+  tasks:
+    - name: Install epel-release
+      become: true
+      yum:
+        name: epel-release
+        state: present
+
+    - name: Update all packages with dnf
+      become: true
+      ansible.builtin.dnf:
+        name: '*'
+        state: latest      
+
+    - name: Install some more packages
+      become: true
+      ansible.builtin.dnf:
+        name:
+          - joe
+          - htop
+          - mc
+        state: latest      
+
+    - name: Copy /etc/hosts files to remotes
+      copy:
+        src: /etc/hosts
+        dest: /tmp/hosts
+
+    - name: Populate remote /etc/hosts
+      become: true
+      shell: cat /etc/hosts /tmp/hosts > /tmp/hosts2; yes | cp /tmp/hosts2 /etc/hosts
+
+    - name: Copy /etc/hosts files to remotes
+      become: true    
+      copy:
+        src: /etc/hosts
+        dest: /etc/hosts
+
+    - name: Add eToken public keys to remotes
+      become: true    
+      copy:
+        src: etoken.pub
+        dest: /root/.ssh/authorized_keys
+
+# disable /home/netology/.ssh/authorized_keys
+# mkdir /var/jenkinsdir
+
+
+#      shell: cat /etc/hosts | cat  /tmp/hosts <(cat)  > /etc/hosts # Can use - instead of <(cat)       
+    
+# DNF update upgrade, etc.
+
+#    - name: Wait a few seconds more
+#      ansible.builtin.shell: sleep 5s
+
+# =====> UNUSED Examples:
+
+#      - name: Wait for SSH to start on the runner hosts
+#        wait_for:
+##         host: "{{ ansible_host }}"
+#          port: 22
+#          delay: 10
+#          timeout: 60
+#          state: started
