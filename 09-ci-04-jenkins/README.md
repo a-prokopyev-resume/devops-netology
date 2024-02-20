@@ -1,4 +1,4 @@
-# Домашнее задание к занятию 10 «Jenkins»
+# [Домашнее задание](https://github.com/netology-code/mnt-homeworks/blob/MNT-video/09-ci-04-jenkins/README.md) к занятию [«Jenkins»](https://netology.ru/profile/program/cicd-dev-27/lessons/305483/lesson_items/1652080)
 # Студент: Прокопьев Александр Борисович (AlexPro/AlexPro2 in Netology DevOps27 group)
 
 ## Подготовка к выполнению
@@ -101,39 +101,20 @@ http://master:8080/
 1. - 2. Поэкспериментировал с Freestyle и Declarative pipelines:
 ![](images/jobs.png)
 
-3. Перенёс declarative pipeline в репозиторий в файл [Jenkinsfile](src/ansible/roles/role1/Jenkinsfile), который вызывается из другого файла [Jenkinsfile](../Jenkinsfile) в корневом каталоге общего репозитория всех моих учебных работ:
-```
-pipeline {
-
-    agent {
-        node {
-            label 'agent'
-        }
-    }
-
-    stages {
-        stage('Build') {
-            steps {
-                dir('09-ci-04-jenkins/src/ansible/roles/role1') {
-                    script {
-                        def Role1_Jenkinsfile = load 'Jenkinsfile'
-                        Role1_Jenkinsfile()
-                    }
-                }
-            }
-        }
-    }
-}
-```
-4. Создал multibranch pipeline с одноимённым его типу именем:
+3. Перенёс declarative pipeline в репозиторий в файл (решение данной задачи) [Jenkinsfile](src/ansible/roles/role1/Jenkinsfile), который вызывается из другого файла `Jenkinsfile` в корневом каталоге общего репозитория всех моих учебных работ.
    
+4. Создал multibranch pipeline с одноимённым его типу именем:
+![](images/multibranch2.png)
+
 5. Создал исправленный scripted pipeline [ScriptedJenkinsfile](pipeline/ScriptedJenkinsfile):
 ![](images/aragast2.png)
 
-Ссылки на соответствующие файлы пайплайнов указаны выше по тексту (при каждом упоминании Jenkinsfile).
+Ссылки на соответствующие файлы пайплайнов указаны выше по тексту (при каждом упоминании Jenkinsfile), и для вашего удобства продублировал их ещё раз:
+* [Jenkinsfile](src/ansible/roles/role1/Jenkinsfile)
+* [ScriptedJenkinsfile](pipeline/ScriptedJenkinsfile)
 
 ## Необязательная часть
 
-У меня подобным образом решаются подготовительные работы к задачам, например, в этой работе так подготавливаются виртуалки для Jenkins: [Ansible playbook](src/ansible/main.yml) и [модуль Terraform](src/terraform/yandex.tf).
+У меня подобным образом решаются подготовительные работы к задачам, например, в этой работе так подготавливаются виртуалки для Jenkins: [Ansible playbook](src/ansible/main.yml) и [модуль Terraform](src/terraform/yandex.tf). 
 
-Единственное, что нужно было доделать, - это только добавить запуск из Scripted Pipeline.
+Единственное, что нужно доделать, - это только добавить запуск из Scripted Pipeline. Так как эта задача необязательная, то пока отложил на потом, чтобы не пересоздавать инфру Jenkins плейбуком, который я упоминал в этой задаче.
