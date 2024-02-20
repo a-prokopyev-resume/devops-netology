@@ -3,7 +3,7 @@
 
 ## Подготовка к выполнению
 
-Написал свой [Ansible playbook](src/ansible/main.yml) и [модуль Terraform](src/terraform/yandex.tf) для создания требуемых в задании виртуальных машин одной группой (yandex_compute_instance_group):
+Написал свой [Ansible playbook](src/ansible/main.yml) и [модуль Terraform](../09-ci-03-cicd/src/terraform/yandex.tf) для создания требуемых в задании виртуальных машин одной группой (yandex_compute_instance_group):
 ```
    - name: Create VMs by Terraform
       community.general.terraform:
@@ -115,6 +115,6 @@ http://master:8080/
 
 ## Необязательная часть
 
-У меня подобным образом решаются подготовительные работы к задачам, например, в этой работе так подготавливаются виртуалки для Jenkins: [Ansible playbook](src/ansible/main.yml) и [модуль Terraform](src/terraform/yandex.tf). 
+У меня подобным образом решаются подготовительные работы к задачам, например, в этой работе так подготавливаются виртуалки для Jenkins: [Ansible playbook](src/ansible/main.yml) и [модуль Terraform](../09-ci-03-cicd/src/terraform/yandex.tf). 
 
 Единственное, что нужно доделать, - это только добавить запуск из Scripted Pipeline. Так как эта задача необязательная, то пока отложил на потом, чтобы не пересоздавать инфру Jenkins плейбуком, который я упоминал в этой задаче.
