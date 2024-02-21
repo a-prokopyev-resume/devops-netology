@@ -32,6 +32,7 @@
           - joe
           - htop
           - mc
+          - net-tools
         state: latest      
 
     - name: Copy /etc/hosts files to remotes
