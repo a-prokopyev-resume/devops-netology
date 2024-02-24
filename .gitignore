@@ -18,7 +18,7 @@
 /**/terraform.tfstate*
 /**/personal.auto.tfvars
 /**/.terraform
+/**/.git
 /**/key.json
 /**/authorized_key.json
 .timestamp
-
