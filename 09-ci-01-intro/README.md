@@ -19,14 +19,8 @@
 Создаю workflow для issue типа Bug:
 ![](images/bug_workflow.png)
 
-
-Остальные задачи должны проходить по упрощённому workflow:
-
-1. Open -> On develop.
-2. On develop -> Open, Done develop.
-3. Done develop -> On test.
-4. On test -> On develop, Done.
-5. Done -> Closed, Open.
+ и workflow для issue других типов:
+![](images/feature_workflow.png) 
 
 **Что нужно сделать**
 
@@ -35,5 +29,6 @@
 1. При проведении обеих задач по статусам используйте kanban. 
 1. Верните задачи в статус Open.
 1. Перейдите в Scrum, запланируйте новый спринт, состоящий из задач эпика и одного бага, стартуйте спринт, проведите задачи до состояния Closed. Закройте спринт.
-2. Если всё отработалось в рамках ожидания — выгрузите схемы workflow для импорта в XML. Файлы с workflow и скриншоты workflow приложите к решению задания.
+2. выгрузите схемы workflow для импорта в XML. 
+   Файлы с workflow и скриншоты workflow приложите к решению задания.
 
