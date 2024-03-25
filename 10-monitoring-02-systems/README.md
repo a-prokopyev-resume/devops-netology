@@ -73,9 +73,9 @@ Pull модель:
 6.
 * Prometheus	    Pull (Push с Pushgateway)
 * TICK		        Push
-* Zabbix 		      Push (Pull с Zabbix Proxy)
-* VictoriaMetrics	Push/Pull, зависит от источника
-* Nagios 		      Pull
+* Zabbix 		      Push (Pull с Zabbix Proxy, т.е. в каком-то смысле гибридная модель)
+* VictoriaMetrics	Push/Pull, гибридная модель, которая зависит от источника
+* Nagios 		      Pull (отдельно включаемой опцией есть и вариант Push, поэтому можно считать и гибридным)
 
 7.
 
