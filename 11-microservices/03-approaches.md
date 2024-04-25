@@ -29,7 +29,7 @@ ELK
 
 Классический вариант для сбора и анализа метрик - это Prometheus + Grafana.
 
-Но судя по документации и промо материалам ELK теперь тоже умеет такое и становится комплексным решением для сбора логов, метрик и даже трейсов одновременно: 
+Но судя по документации и промо материалам, ELK теперь тоже умеет такое и становится комплексным решением для сбора логов, метрик и даже трейсов одновременно: 
 
 * [Observability with the Elastic Stack](https://www.elastic.co/blog/observability-with-the-elastic-stack)
 * [The future of observability](https://www.elastic.co/blog/observability-predictions-trends-2023)

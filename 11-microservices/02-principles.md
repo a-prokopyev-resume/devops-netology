@@ -71,20 +71,20 @@ https://redpanda.com/guides/kafka-alternatives/kafka-throughput
 - простота эксплуатации.
 
 Но я выбрал бы Redpanda, потому что судя по описанию [Redpanda обладает следующими преимуществами](https://github.com/redpanda-data/redpanda/):
+
 ```
-Redpanda is a streaming data platform for developers. Kafka® API-compatible. ZooKeeper® free. JVM free. We built it from the ground up to eliminate complexity common to Apache Kafka, improve performance by up to 10x, and make the storage architecture safer, and more resilient. The simpler devex lets you focus on your code (instead of fighting Kafka) and develop new use cases that were never before possible. The business benefits from a significantly lower total cost and faster time to market. A new platform that scales with you from the smallest projects to petabytes of data distributed across the globe!
+Redpanda is a streaming data platform for developers. Kafka® API-compatible. ZooKeeper® free. JVM free. 
+We built it from the ground up to eliminate complexity common to Apache Kafka, improve performance by up to 10x, and make the storage architecture safer, and more resilient. The simpler devex lets you focus on your code (instead of fighting Kafka) and develop new use cases that were never before possible. The business benefits from a significantly lower total cost and faster time to market. A new platform that scales with you from the smallest projects to petabytes of data distributed across the globe!
 ```
 
-Ещё раз подчеркну следующие преимущества Redpanda по сравнению с Kafka:
-* Совместимость с Kafka API, а значит, замену сделать относительно несложно
-* Не использует ZooKeeper
-* Не использует JVM
-* Производительно выше до 10 раз
-* Более безопасная архитектура хранилища данных
+Ещё раз подчеркну преимущества Redpanda по сравнению с Kafka:
+* Проще настройка и обслуживание
+* Заявлена более надёжная архитектура хранения данных
 * [Более эластичная архитектура](https://redpanda.com/blog/producer-config-deep-dive), на Kafka жалуются, что у неё сильно падает производительность во время падения отдельных узлов
-* В итоге Redpanda позволяет сосредоточиться на своём бизнесе, а не бороться с проблемами уже в каком-то смысле устаревающей Kafka
-* Позволяет обрабатывать петабайты геораспределённых данных
-
+* Совместимость с Kafka API, а значит, замену сделать относительно несложно
+* Не использует JVM и в определённых случаях выше производительность (но по отзывам при длительной работе это может быть и не так)
+* Не использует ZooKeeper (в Kafka v4 тоже собираются избавиться от ZooKeeper)
+* В итоге Redpanda позволяет сосредоточиться на своём бизнесе, а не бороться с проблемами Kafka, которых якобы больше, чем проблем при эксплуатации Redpanda
 ```
 Redpanda is designed to be more resilient than Kafka in terms of handling broker crashes due to its default configuration, which requires messages to be replicated and fsynced to the majority of brokers responsible for the partition in the cluster before they are considered acknowledged and made visible to readers. This ensures that messages are durable in case of broker crashes, providing a higher level of fault tolerance compared to Kafka's default configuration, which does not require messages to be fsynced before they are acknowledged
 ```
@@ -115,3 +115,5 @@ THIS FILE IS LICENSED ONLY PROVIDED FOLLOWING RESTRICTIONS ALSO APPLY:
 Nobody except the AUTHOR may alter or remove this copyright notice from any copies of this file content (including modified fragments). Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
 
 ATTENTION: If potential user's or licensee's country laws collide or are not compatible with the terms of this copyright notice or if a potential user or licensee does not agree with the terms of this copyright notice then such potential user or licensee   is STRONGLY PROHIBITED to use this file by any method.
+
+
