@@ -82,7 +82,7 @@ We built it from the ground up to eliminate complexity common to Apache Kafka, i
 * Заявлена более надёжная архитектура хранения данных
 * [Более эластичная архитектура](https://redpanda.com/blog/producer-config-deep-dive), на Kafka жалуются, что у неё сильно падает производительность во время падения отдельных узлов
 * Совместимость с Kafka API, а значит, замену сделать относительно несложно
-* Не использует JVM и в определённых случаях выше производительность (но по отзывам при длительной работе это может быть и не так)
+* Не использует JVM и [в определённых случаях выше производительность](https://redpanda.com/blog/redpanda-vs-kafka-performance-benchmark) (но по отзывам при длительной работе это может быть и не так)
 * Не использует ZooKeeper (в Kafka v4 тоже собираются избавиться от ZooKeeper)
 * В итоге Redpanda позволяет сосредоточиться на своём бизнесе, а не бороться с проблемами Kafka, которых якобы больше, чем проблем при эксплуатации Redpanda
 ```
@@ -95,7 +95,7 @@ Redpanda is designed to be more resilient than Kafka in terms of handling broker
 * https://docs.redpanda.com/current/get-started/architecture/
 * https://docs.redpanda.com/current/develop/transactions/
 
-IMHO, выбор очевиден.
+IMHO, выбор очевиден, по крайне мере для стартапов, но, возможно, пока ещё не для enterprise.
 
 
 ### The Beginning of the Copyright Notice:
