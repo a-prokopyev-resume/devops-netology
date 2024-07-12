@@ -31,7 +31,7 @@
 
 ### Задание 2. Установка и настройка локального kubectl
 
-Запускаю установку утилит своим скриптом: `/utils/k0s/install_tools.sh`. Он сам добавляет нужные `deb` репозитории, их ключи и устанавливает соответствующие пакет `helm` и `kubectl`.  
+Запускаю установку утилит своим скриптом: `/utils/k0s/install_tools.sh`. Он сам добавляет нужные `deb` репозитории, их ключи и устанавливает соответствующие пакеты `helm` и `kubectl`.  
 
 Устанавливаю локальный конфиг утилиты `kubectl`: `source /utils/k0s/config.sh k0s.yml`  
 Далее проверяю все созданные объекты Kubernetes: `/utils/k0s/all.sh`  
@@ -42,7 +42,7 @@
 * https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
 * https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md
 
-Чтобы упростить установку и сделать её более легко повторяемой я создал скрипт [dashboard.sh](src/dashboard.sh),который:
+Чтобы упростить установку и сделать её более легко повторяемой я создал скрипт [dashboard.sh](src/dashboard.sh), который:
 1) устанавливает имя `namespace` по умолчанию, равное `kubernetes-dashboard`
 2) устанавливает в кластер `helm chart` `kubernetes-dashboard` с помощью `helm` CLI
 3) применяет спецификацию `dashboard.yml` для создания `bearing token`, - это теперь единственно поддерживаемый способ аутентифиции в актуальных версиях `kubernetes-dashboard`
