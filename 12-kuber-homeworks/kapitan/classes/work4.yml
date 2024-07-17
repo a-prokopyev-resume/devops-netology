@@ -1,0 +1,28 @@
+classes:
+  - kapitan
+  - netology
+  
+parameters:
+  kapitan:
+    compile:
+#      - output_path: .
+#        output_type: yaml
+#        input_type: jinja2
+#        input_paths:
+#          - templates/work3/yml
+      - output_path: .    
+        input_type: jinja2
+        input_paths:  
+          - src/work4
+
+#=== Images:
+  NginxImage: bitnami/nginx # nginx:1.25.4
+  ToolImage: wbitt/network-multitool
+  InitImage: busybox
+
+#=== Tool ports:
+  NginxExtPort: 30001
+  ToolExtPort: 30002
+
+  NginxIntPort: 9001
+  ToolIntPort: 9002

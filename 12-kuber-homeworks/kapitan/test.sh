@@ -1,8 +1,6 @@
 #./compile.sh;
 
-#source /utils/k0s/config/switch.sh linode.yml;
-
-cd result/task-3-2/;
+cd result/task-4-all/;
 
 ./apply.sh;
 

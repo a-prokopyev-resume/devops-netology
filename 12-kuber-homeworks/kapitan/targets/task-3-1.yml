@@ -3,4 +3,3 @@ classes:
 
 parameters:
   target_name: task-3-1 
-  PodName: hello-world
