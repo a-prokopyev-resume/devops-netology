@@ -18,6 +18,8 @@
 
 Исходники решения задачи до шаблонизации `Капитаном`: https://github.com/a-prokopyev-resume/devops-netology/blob/main/12-kuber-homeworks/kapitan/src/work2  
 
+Настройки `Kapitan` для этой работы: https://github.com/a-prokopyev-resume/devops-netology/blob/main/12-kuber-homeworks/kapitan/classes/work2.yml
+
 ### Задание 1. Создать Pod с именем hello-world
 
 Target специфичная версия после шаблонизации `Капитаном`:  

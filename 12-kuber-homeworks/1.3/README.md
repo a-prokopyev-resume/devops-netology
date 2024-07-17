@@ -19,6 +19,8 @@
 
 Исходники решения задач до шаблонизации `Капитаном`: https://github.com/a-prokopyev-resume/devops-netology/blob/main/12-kuber-homeworks/kapitan/src/work3  
 
+Настройки `Kapitan` для этой работы: https://github.com/a-prokopyev-resume/devops-netology/blob/main/12-kuber-homeworks/kapitan/classes/work3.yml
+
 ### Задание 1. Создать Deployment и обеспечить доступ к репликам приложения из другого Pod
 
 Написал свой скрипт `apply.sh` для повторяемого автоматического выполнения всех шагов каждой из задач этой работы:  
