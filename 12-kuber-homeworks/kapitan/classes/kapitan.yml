@@ -1,0 +1,5 @@
+parameters:
+  kapitan:
+    vars:
+      target: ${target_name}
+  target_name2: ${_reclass_:name:short}

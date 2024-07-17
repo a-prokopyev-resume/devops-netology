@@ -1,0 +1,43 @@
+# Work-12-2 solution
+
+#---
+#info:
+#  target: {{ target }}
+#  student: {{ inventory.parameters.netology }}
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ inventory.parameters.target_name }}
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ inventory.parameters.PodName }}
+  labels:
+    app: {{ inventory.parameters.PodName }}
+    target1: task-2-1
+    target2: task-2-2
+spec:
+  containers:
+  - name: echoserver
+    image: {{ inventory.parameters.ContainerImage }}
+    ports:
+    - containerPort: {{ inventory.parameters.RemotePort }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ inventory.parameters.ServiceName }}
+  labels:
+    target2: task-2-2
+spec:
+  selector:
+    app: {{ inventory.parameters.PodName }}
+  ports:
+    - protocol: TCP
+      port: {{ inventory.parameters.ServicePort }}
+      targetPort: {{ inventory.parameters.RemotePort }}

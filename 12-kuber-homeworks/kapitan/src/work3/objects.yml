@@ -1,0 +1,105 @@
+# Work-12-3 solution
+
+#---
+#info:
+#  target: {{ target }}
+#  student: {{ inventory.parameters.netology }}
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ inventory.parameters.target_name }}
+  namespace: {{ inventory.parameters.target_name }}
+  labels:
+    target1: task-3-1
+    target2: task-3-2
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ inventory.parameters.target_name }}-deployment
+  namespace: {{ inventory.parameters.target_name }}  
+  labels:
+    target1: task-3-1
+    target2: task-3-2
+spec:
+  selector:
+    matchLabels:
+      app: {{ inventory.parameters.target_name }}-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ inventory.parameters.target_name }}-app
+    spec:
+      securityContext:
+        runAsUser: 0 # run as root for debugging
+#       runAsNonRoot: false
+#       allowPrivilegeEscalation: true
+      containers:
+      - name: nginx
+        image: {{ inventory.parameters.NginxImage }}
+        ports:
+        - name: nginx
+          containerPort: {{ inventory.parameters.NginxPort }}
+        env:
+          - name: NGINX_HTTP_PORT_NUMBER
+            value: "{{ inventory.parameters.NginxPort }}"
+      - name: tool
+        image: {{ inventory.parameters.ToolImage }}
+        ports:
+        - name: tool
+          containerPort: {{ inventory.parameters.ToolPort }}
+        env: 
+          - name: HTTP_PORT
+            value: "{{ inventory.parameters.ToolPort }}"
+
+{% if inventory.parameters.target_name == 'task-3-2' %}
+      initContainers:
+      - name: busybox
+        image: {{ inventory.parameters.InitImage }}
+        command: ['sh', '-c', 'until nslookup task-3-2-service.task-3-2.svc.cluster.local; do echo waiting for the service to become available ...; sleep 1s; done']
+{% endif %}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ inventory.parameters.target_name }}-service
+  namespace: {{ inventory.parameters.target_name }}  
+  labels:
+    target1: task-3-1
+    target2: task-3-2
+{% if inventory.parameters.target_name == 'task-3-2' %}    
+    step: second
+{% endif %}
+spec:
+  selector:
+    app: {{ inventory.parameters.target_name }}-app
+  ports:
+    - port: {{ inventory.parameters.NginxServicePort }}
+#     protocol: TCP
+      name: nginx-svc
+      targetPort: nginx
+    - port: {{ inventory.parameters.ToolServicePort }}
+#     protocol: TCP
+      name: tool-svc
+      targetPort: tool
+
+{% if inventory.parameters.target_name == 'task-3-1' %}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: task-3-1-pod
+  namespace: {{ inventory.parameters.target_name }}  
+  labels:
+    target1: task-3-1
+spec:
+   containers:
+     - name: tool
+       image: {{ inventory.parameters.ToolImage }}
+       ports:
+        - containerPort: {{ inventory.parameters.ToolPort }}
+{% endif %}

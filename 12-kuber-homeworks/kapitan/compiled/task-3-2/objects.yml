@@ -1,0 +1,86 @@
+# Work-12-3 solution
+
+#---
+#info:
+#  target: task-3-2
+#  student: {'course': 'DevOps27', 'module': '12-Kubernetes', 'student': {'fio': 'Prokopyev Alexander Borisovich', 'e-mail': 'a.prokopyev.resume@gmail.com', 'url': 'https://github.com/a-prokopyev-resume/devops-netology'}}
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: task-3-2
+  namespace: task-3-2
+  labels:
+    target1: task-3-1
+    target2: task-3-2
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-3-2-deployment
+  namespace: task-3-2  
+  labels:
+    target1: task-3-1
+    target2: task-3-2
+spec:
+  selector:
+    matchLabels:
+      app: task-3-2-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: task-3-2-app
+    spec:
+      securityContext:
+        runAsUser: 0 # run as root for debugging
+#       runAsNonRoot: false
+#       allowPrivilegeEscalation: true
+      containers:
+      - name: nginx
+        image: bitnami/nginx
+        ports:
+        - name: nginx
+          containerPort: 2080
+        env:
+          - name: NGINX_HTTP_PORT_NUMBER
+            value: "2080"
+      - name: tool
+        image: wbitt/network-multitool
+        ports:
+        - name: tool
+          containerPort: 2081
+        env: 
+          - name: HTTP_PORT
+            value: "2081"
+
+      initContainers:
+      - name: busybox
+        image: busybox
+        command: ['sh', '-c', 'until nslookup task-3-2-service.task-3-2.svc.cluster.local; do echo waiting for the service to become available ...; sleep 1s; done']
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: task-3-2-service
+  namespace: task-3-2  
+  labels:
+    target1: task-3-1
+    target2: task-3-2
+    
+    step: second
+spec:
+  selector:
+    app: task-3-2-app
+  ports:
+    - port: 80
+#     protocol: TCP
+      name: nginx-svc
+      targetPort: nginx
+    - port: 81
+#     protocol: TCP
+      name: tool-svc
+      targetPort: tool
+

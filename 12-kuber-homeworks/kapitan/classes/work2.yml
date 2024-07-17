@@ -1,0 +1,24 @@
+classes:
+  - kapitan
+  - netology
+  
+parameters:
+  kapitan:
+    compile:
+#      - output_path: .
+#        output_type: yaml
+#        input_type: jinja2
+#        input_paths:
+#          - templates/work2/yml
+      - output_path: .
+        input_type: jinja2
+        input_paths:
+          - src/work2
+
+  ServiceName:
+  LocalPort: 81
+  ServicePort: 80
+  RemotePort: 8080
+  ContainerImage: gcr.io/kubernetes-e2e-test-images/echoserver:2.2
+          
+

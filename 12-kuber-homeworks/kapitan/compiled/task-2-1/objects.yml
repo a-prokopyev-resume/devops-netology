@@ -1,0 +1,43 @@
+# Work-12-2 solution
+
+#---
+#info:
+#  target: task-2-1
+#  student: {'course': 'DevOps27', 'module': '12-Kubernetes', 'student': {'fio': 'Prokopyev Alexander Borisovich', 'e-mail': 'a.prokopyev.resume@gmail.com', 'url': 'https://github.com/a-prokopyev-resume/devops-netology'}}
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: task-2-1
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hello-world
+  labels:
+    app: hello-world
+    target1: task-2-1
+    target2: task-2-2
+spec:
+  containers:
+  - name: echoserver
+    image: gcr.io/kubernetes-e2e-test-images/echoserver:2.2
+    ports:
+    - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: None
+  labels:
+    target2: task-2-2
+spec:
+  selector:
+    app: hello-world
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

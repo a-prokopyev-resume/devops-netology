@@ -1,0 +1,6 @@
+classes:
+  - work2
+
+parameters:
+  target_name: task-2-1 
+  PodName: hello-world

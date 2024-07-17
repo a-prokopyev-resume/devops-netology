@@ -1,0 +1,6 @@
+classes:
+  - work3
+
+parameters:
+  target_name: task-3-1 
+  PodName: hello-world
