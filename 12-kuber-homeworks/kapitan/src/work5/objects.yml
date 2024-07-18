@@ -1,0 +1,108 @@
+---
+
+{% set TargetName = inventory.parameters.target_name %}
+{% set P = inventory.parameters %}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: back
+  namespace: {{ target }}
+spec:
+  selector:
+    matchLabels:
+      app: back
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: back
+        group: ingress
+    spec:
+      containers:
+      - name: tool
+        image: {{ P.ToolImage }}
+        env: 
+          - name: HTTP_PORT
+            value: "{{ P.ToolPort }}"
+        ports:
+        - name: tool
+          containerPort: {{ P.ToolPort }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front
+  namespace: {{ target }}
+spec:
+  selector:
+    matchLabels:
+      app: front
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: front
+        group: ingress
+    spec:
+      securityContext:
+        runAsUser: 0 
+      containers:
+      - name: nginx
+        image: {{ P.NginxImage }}
+        env:
+          - name: NGINX_HTTP_PORT_NUMBER
+            value: "{{ P.NginxPort }}"
+        ports:
+        - name: nginx
+          containerPort: {{ P.NginxPort }}
+
+---              
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-link
+  namespace: {{ target }}
+spec:
+  selector:
+    group: ingress
+  ports:
+    - name: nginx
+      port: {{ P.NginxServicePort }}
+      targetPort: nginx
+    - name: tool
+      port: {{ P.ToolServicePort }}
+      targetPort: tool
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: work5
+  namespace: {{ target }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: work5.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ingress-link
+            port:
+#              number: {{ P.NginxServicePort }}
+              name: nginx
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: ingress-link
+            port:
+#              number: {{ P.ToolServicePort }}
+              name: tool
+

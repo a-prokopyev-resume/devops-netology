@@ -1,6 +1,6 @@
-#./compile.sh;
+./compile.sh;
 
-cd result/task-4-all/;
+cd result/task-5-all/;
 
 ./apply.sh;
 

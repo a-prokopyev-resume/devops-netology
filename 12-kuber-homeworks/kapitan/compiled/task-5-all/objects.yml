@@ -1,0 +1,105 @@
+---
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: back
+  namespace: task-5-all
+spec:
+  selector:
+    matchLabels:
+      app: back
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: back
+        group: ingress
+    spec:
+      containers:
+      - name: tool
+        image: wbitt/network-multitool
+        env: 
+          - name: HTTP_PORT
+            value: "8080"
+        ports:
+        - name: tool
+          containerPort: 8080
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front
+  namespace: task-5-all
+spec:
+  selector:
+    matchLabels:
+      app: front
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: front
+        group: ingress
+    spec:
+      securityContext:
+        runAsUser: 0 
+      containers:
+      - name: nginx
+        image: bitnami/nginx
+        env:
+          - name: NGINX_HTTP_PORT_NUMBER
+            value: "80"
+        ports:
+        - name: nginx
+          containerPort: 80
+
+---              
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-link
+  namespace: task-5-all
+spec:
+  selector:
+    group: ingress
+  ports:
+    - name: nginx
+      port: 9001
+      targetPort: nginx
+    - name: tool
+      port: 9002
+      targetPort: tool
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: work5
+  namespace: task-5-all
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: work5.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ingress-link
+            port:
+#              number: 9001
+              name: nginx
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: ingress-link
+            port:
+#              number: 9002
+              name: tool
