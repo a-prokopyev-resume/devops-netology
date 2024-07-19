@@ -3,10 +3,8 @@
 #rm -Rf module12/compiled;
 #cd module12; 
 source aliases.sh;
-kapitan inventory --inventory-path=. > /tmp/inventory.txt;
+kapitan inventory --inventory-path=. --target-name task-13 > /tmp/inventory.txt;
 joe /tmp/inventory.txt;
-
-#--targets=task2_1;
 
 #  --inventory-backend reclass-rs;
 # --quiet;

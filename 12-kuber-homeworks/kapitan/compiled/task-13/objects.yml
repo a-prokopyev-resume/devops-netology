@@ -1,0 +1,189 @@
+---
+
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+  namespace: app
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+
+
+---  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front
+  namespace: app
+spec:
+  selector:
+    matchLabels:
+      app: front
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: front
+    spec:
+      containers:
+      - name: tool
+        image: wbitt/network-multitool
+        ports:
+        - name: tool
+          containerPort: 8081
+        env:
+        - name: HTTP_PORT
+          value: "8081"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: front-service
+  namespace: app
+spec:
+  selector:
+    app: front
+  ports:
+    - protocol: TCP
+      name: tool
+      port: 9001
+      targetPort: tool # 8081
+
+
+
+
+
+---  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: back
+  namespace: app
+spec:
+  selector:
+    matchLabels:
+      app: back
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: back
+    spec:
+      containers:
+      - name: tool
+        image: wbitt/network-multitool
+        ports:
+        - name: tool
+          containerPort: 8082
+        env:
+        - name: HTTP_PORT
+          value: "8082"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: back-service
+  namespace: app
+spec:
+  selector:
+    app: back
+  ports:
+    - protocol: TCP
+      name: tool
+      port: 9002
+      targetPort: tool # 8082
+
+
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: back-policy
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      app: back
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: front
+      ports:
+        - protocol: TCP
+          port: 8082
+          
+
+
+---  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cache
+  namespace: app
+spec:
+  selector:
+    matchLabels:
+      app: cache
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cache
+    spec:
+      containers:
+      - name: tool
+        image: wbitt/network-multitool
+        ports:
+        - name: tool
+          containerPort: 8083
+        env:
+        - name: HTTP_PORT
+          value: "8083"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cache-service
+  namespace: app
+spec:
+  selector:
+    app: cache
+  ports:
+    - protocol: TCP
+      name: tool
+      port: 9003
+      targetPort: tool # 8083
+
+
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cache-policy
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      app: cache
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: back
+      ports:
+        - protocol: TCP
+          port: 8083
+          

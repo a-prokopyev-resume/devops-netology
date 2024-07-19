@@ -1,0 +1,66 @@
+---  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ AppName }}
+  namespace: {{ Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ AppName }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ AppName }}
+    spec:
+      containers:
+      - name: tool
+        image: {{ AppImage }}
+        ports:
+        - name: tool
+          containerPort: {{ AppPort }}
+        env:
+        - name: HTTP_PORT
+          value: "{{ AppPort }}"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ AppName }}-service
+  namespace: {{ Namespace }}
+spec:
+  selector:
+    app: {{ AppName }}
+  ports:
+    - protocol: TCP
+      name: tool
+      port: {{ AppServicePort }}
+      targetPort: tool # {{ AppPort }}
+
+
+{% if ClientAppName is defined %}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ AppName }}-policy
+  namespace: {{ Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ AppName }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: {{ ClientAppName }}
+      ports:
+        - protocol: TCP
+          port: {{ AppPort }}
+          
+{% endif %}

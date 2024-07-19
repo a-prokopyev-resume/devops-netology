@@ -1,6 +1,6 @@
 ./compile.sh;
 
-cd result/task-5-all/;
+cd result/task-13/;
 
 ./apply.sh;
 

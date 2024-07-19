@@ -1,5 +1,5 @@
 parameters:
   kapitan:
     vars:
-      target: ${target_name}
-  target_name2: ${_reclass_:name:short}
+      target: ${_reclass_:name:short}
+#      var123: "test45"

@@ -1,0 +1,39 @@
+---
+
+{% set P = inventory.parameters %}
+{% set TargetName = target %}
+{% set AppImage = ToolImage %}
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+  namespace: {{Namespace}}
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+
+{% set AppName = 'front' %}
+{% set AppN = 1 %}
+{% set AppPort = ToolPort + AppN %}
+{% set AppServicePort = ToolServicePort + AppN %}
+
+{% include 'tier_template.jinja2' %}
+
+
+{% set ClientAppName = 'front' %}
+{% set AppName = 'back' %}
+{% set AppN = 2 %}
+{% set AppPort = ToolPort + AppN %}
+{% set AppServicePort = ToolServicePort + AppN %}
+
+{% include 'tier_template.jinja2' %}
+
+{% set ClientAppName = 'back' %}
+{% set AppName = 'cache' %}
+{% set AppN = 3 %}
+{% set AppPort = ToolPort + AppN %}
+{% set AppServicePort = ToolServicePort + AppN %}
+
+{% include 'tier_template.jinja2' %}

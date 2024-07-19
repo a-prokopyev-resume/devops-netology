@@ -1,0 +1,25 @@
+classes:
+  - kapitan
+  - netology
+  
+parameters:
+  kapitan:
+    compile:
+#      - output_path: .
+#        output_type: yaml
+#        input_type: jinja2
+#        input_paths:
+#          - templates/work3/yml
+      - output_path: .
+        input_type: jinja2
+        input_paths:
+          - src/work13/*.yml
+          - src/work13/*.sh
+    vars:
+      ToolImage: wbitt/network-multitool
+      Namespace: app
+      ToolPort: 8080
+      ToolServicePort: 9000
+#  NginxImage: bitnami/nginx # nginx:1.25.4
+#  InitImage: busybox      
+
