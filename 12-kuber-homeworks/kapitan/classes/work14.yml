@@ -1,0 +1,26 @@
+classes:
+  - kapitan
+  - netology
+  
+parameters:
+  TargetName: ${_reclass_:name:short}
+  Namespace: ${TargetName}  
+  ToolImage: wbitt/network-multitool
+  ToolPort: 8081
+  ToolServicePort: 9001
+  NginxImage1: bitnami/nginx:1.19.0
+  NginxImage2: bitnami/nginx:1.20.0
+  NginxImage3: bitnami/nginx:1.28.0
+  NginxPort: 8080
+#  InitImage: busybox  
+  
+  kapitan:
+    compile:
+      - output_path: .
+        input_type: jinja2
+        input_paths:
+          - src/work14/*.yml
+          - src/work14/*.sh
+#    vars:
+#
+

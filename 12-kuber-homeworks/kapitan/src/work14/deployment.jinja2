@@ -1,0 +1,42 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ target }}-deployment
+  namespace: {{ P.Namespace }}
+  labels:
+    position: step-{{ AppN }}
+  annotations:
+    kubernetes.io/change-cause: "{{ NginxImage }}"
+spec:
+  selector:
+    matchLabels:
+      app: {{ AppName }}
+  replicas: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 2
+  template:
+    metadata:
+      labels:
+        app: {{ AppName }}
+    spec:
+      containers:
+      - name: nginx
+        image: {{ NginxImage }}
+        env:
+          - name: NGINX_HTTP_PORT_NUMBER
+            value: "{{ P.NginxPort }}"
+        ports:
+        - name: nginx
+          containerPort: {{ P.NginxPort }}
+      - name: tool
+        image: {{ P.ToolImage }}
+        ports:
+        - containerPort: {{ P.ToolPort }}
+        env:
+          - name: HTTP_PORT
+            value: "{{ P.ToolPort }}"
+
