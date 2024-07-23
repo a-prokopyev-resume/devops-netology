@@ -1,4 +1,4 @@
-#!/usr/bin/env -vS bash -li
+#!/usr/bin/env -S bash -li
 
 #=============================================== The Beginning of the Copyright Notice ===================================================
 # The AUTHOR of this file and the owner of all exclusive rights in this file is Alexander Borisovich Prokopyev
@@ -8,6 +8,7 @@
 # Russian Insurance Number of Individual Ledger Account of the AUTHOR (only the last five digits): ***-***-859 04
 # Copyright (C) Alexander B. Prokopyev, 2024, All Rights Reserved.
 # Contact of the AUTHOR: a.prokopyev.resume at gmail dot com
+# WWW: https://github.com/a-prokopyev-resume/devops-netology/
 #
 # All source code and other content contained in this file is protected by copyright law.
 # This file is licensed by the AUTHOR under AGPL v3 (GNU Affero General Public License): https://www.gnu.org/licenses/agpl-3.0.en.html
@@ -23,58 +24,62 @@
 #================================================== The End of the Copyright Notice ======================================================
 
 
+#set -x;
 
-source /Homework/12-kuber-homeworks/kapitan/k8s.sh;
+Action=$1;
+SubStr="$2";
+Container="$3";
+Cmd="${@:4}";
+#Pkg="${4:-apt}";
+#N="${5:-1}"
+N=1;
 
-set -x;
+#if [ -z $N ]; then
+#	N=1;
+#fi;
 
-Target="task-14";
-#TargetN=$(echo $Target | cut -f 3 -d '-');
-#TargetLabel="target$TargetN";
-Namespace=task-14;
-
-#PodName="tool";
-#DeploymentName="lesson";
-
-#set | grep -i kube;
-
-killall kubectl;
-
-if [ -z "$Namespace" ] ; then
-	echo "Error: empty Namespace!";
-	exit 1;
+if ( ! [ -z $SubStr ] ) && ( ! [ -z $N ] ); then
+	PodName=$(kubectl get pods | grep $SubStr | head -n $N | tail -n 1 | awk '{ print $1 }');
 else
-	kubectl delete namespace $Namespace;
-fi
+	echo "Error: incorrect args!";
+	exit 1;
+fi;
 
-kubectl create namespace $Namespace;
-
-kubectl config set-context --current --namespace=$Namespace;
-
-apply_step()
+kube_exec()
 {
-	StepN=$1;
-
-	kubectl apply -f objects.yml --selector "position=step-$StepN";
-	sleep 15s;
-	kubectl get all -o wide;
+	local Cmd="${@}";
+#set +x;
+	echo "===> Executing:"
+set -x;		
+	kubectl exec -ti pod/$PodName -c $Container -- bash -lc "$Cmd";
+#	--user root	
+	local Result=$?;
+set +x;
+	echo; # new line
+	return $Result;
 }
 
-apply_step 1;
-apply_step 2;
-apply_step 3;
+case $Action in
+	( init )
+		if kube_exec ls /etc/debian_version; then
+			Pkg="apt";
+		elif kube_exec ls /etc/alpine-release; then
+			Pkg="apk";
+		fi;
+		case $Pkg in
+			( apt )
+				InitCmd="apt-get update; apt-get install -y net-tools htop telnet curl; netstat -anp4; #bash";
+			;;
+			( apk )
+				InitCmd="apk update; apk add net-tools htop inetutils-telnet curl; netstat -anp4; #bash";
+			;;
+		esac;
+		kube_exec $InitCmd;
+	;;
+	( exec )
+		kube_exec $Cmd;
+#		echo $Cmd;
+	;;
+esac;
 
-
-rollback()
-{
-	local Revision=$1;
-	kubectl rollout history deployment.apps/task-14-deployment;
-	kubectl rollout undo --to-revision=$Revision deployment.apps/task-14-deployment;
-	kubectl rollout history deployment.apps/task-14-deployment;
-	sleep 15s;
-	kubectl get all -o wide;
-}
-
-rollback 2;
-sleep 3s;
-rollback 1;
+#kubectl exec -ti pod/$PodName -c $Container -- bash -lc "$Cmd";
