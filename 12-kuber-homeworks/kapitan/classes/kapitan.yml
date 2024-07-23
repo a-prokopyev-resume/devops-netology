@@ -2,4 +2,3 @@ parameters:
   kapitan:
     vars:
       target: ${_reclass_:name:short}
-#      var123: "test45"

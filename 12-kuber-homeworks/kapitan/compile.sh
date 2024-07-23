@@ -3,7 +3,8 @@
 source aliases.sh;
 rm -Rf /Homework/12-kuber-homeworks/kapitan/compiled/*;
 #cd module12; 
-kapitan compile  --validate  --verbose --inventory-path=. --targets=task-13;
+kapitan compile  --validate  --verbose --inventory-path=.;
+#--targets=task-14;
 
 #  --inventory-backend reclass-rs;
 # --quiet;
