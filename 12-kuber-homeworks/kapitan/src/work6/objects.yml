@@ -1,0 +1,75 @@
+{% set P = inventory.parameters %}
+{% set AppName = P.TargetName+'-app' %}
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ P.TargetName }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-6-1
+  namespace: {{ P.TargetName }}
+spec:
+  selector:
+    matchLabels:
+      app: lesson-6-1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lesson-6-1
+    spec:
+      containers:
+      - name: writer
+        image: {{ P.WriterImage }}
+        command: ['sh', '-c', 'while true; do echo "=> $(date): - Hello from writer container" >> {{ P.GuestMountPoint }}/writer.log; sleep 1s; done']
+#mkdir -p /mnt/writer && 
+        volumeMounts:
+        - name: shared
+          mountPath: {{ P.GuestMountPoint }}
+      - name: reader
+        image: {{ P.ToolImage }}
+        command: ['bash', '-lc', 'tail -f {{ P.GuestMountPoint }}/writer.log']
+        volumeMounts:
+        - name: shared
+          mountPath: {{ P.GuestMountPoint }}
+          readOnly: true
+      volumes:
+      - name: shared
+        emptyDir: {} # Recycled after intended container deletion
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: task-6-2
+  namespace: {{ P.TargetName }}
+spec:
+  selector:
+    matchLabels:
+      name: lesson-6-2
+  template:
+    metadata:
+      labels:
+        name: lesson-6-2
+    spec:
+      securityContext:
+        runAsUser: 0
+      containers:
+      - name: tool
+        image: {{ P.ToolImage }}
+        command: ['bash', '-lc', 'ls -al /mnt/; sleep 1h']
+        volumeMounts:
+        - name: log
+          mountPath: {{ P.GuestMountPoint }}
+          readOnly: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: log
+        hostPath:
+          path: /var/log
+          

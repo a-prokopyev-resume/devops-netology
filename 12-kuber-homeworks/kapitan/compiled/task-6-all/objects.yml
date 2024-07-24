@@ -1,0 +1,73 @@
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: task-6-all
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-6-1
+  namespace: task-6-all
+spec:
+  selector:
+    matchLabels:
+      app: lesson-6-1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lesson-6-1
+    spec:
+      containers:
+      - name: writer
+        image: busybox:1.29
+        command: ['sh', '-c', 'while true; do echo "=> $(date): - Hello from writer container" >> /mnt/writer.log; sleep 1s; done']
+#mkdir -p /mnt/writer && 
+        volumeMounts:
+        - name: shared
+          mountPath: /mnt
+      - name: reader
+        image: wbitt/network-multitool
+        command: ['bash', '-lc', 'tail -f /mnt/writer.log']
+        volumeMounts:
+        - name: shared
+          mountPath: /mnt
+          readOnly: true
+      volumes:
+      - name: shared
+        emptyDir: {} # Recycled after intended container deletion
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: task-6-2
+  namespace: task-6-all
+spec:
+  selector:
+    matchLabels:
+      name: lesson-6-2
+  template:
+    metadata:
+      labels:
+        name: lesson-6-2
+    spec:
+      securityContext:
+        runAsUser: 0
+      containers:
+      - name: tool
+        image: wbitt/network-multitool
+        command: ['bash', '-lc', 'ls -al /mnt/; sleep 1h']
+        volumeMounts:
+        - name: log
+          mountPath: /mnt
+          readOnly: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: log
+        hostPath:
+          path: /var/log
+          
