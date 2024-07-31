@@ -1,0 +1,30 @@
+classes:
+  - kapitan
+  - netology
+  
+parameters:
+  TargetName: ${_reclass_:name:short}
+  Namespace: ${TargetName}
+
+  NginxImage: bitnami/nginx:1.19.0
+  NginxPort: 8080
+  NginxServicePort: 9000
+
+  ToolImage: wbitt/network-multitool
+  ToolPort: 8081
+  ToolServicePort: 9001  
+  
+  ACME_URL: https://acme-staging-v02.api.letsencrypt.org/directory # testing API
+#  ACME_URL: https://acme-v02.api.letsencrypt.org/directory # prod API with request limits  
+#  Domain: ingress.test2.aulix.com
+  Domain: work8.com
+  
+  kapitan:
+    compile:
+      - output_path: .
+        input_type: jinja2
+        input_paths:
+          - src/work8/*.yml
+          - src/work8/*.sh
+#    vars:
+#

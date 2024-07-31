@@ -4,6 +4,6 @@ parameters:
     module: 12-Kubernetes
     student: 
       fio: Prokopyev Alexander Borisovich
-      e-mail: a.prokopyev.resume@gmail.com
+      email: a.prokopyev.resume@gmail.com
       url: https://github.com/a-prokopyev-resume/devops-netology
     
