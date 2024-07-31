@@ -1,0 +1,210 @@
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lesson-2-3-config
+  namespace: task-8-all
+data:
+  ToolPort: "8081"
+#  index.html: |
+  HTML_File:
+    <html>
+    <h1>ConfigMap</h1>
+    </br>
+    <h1>Hello from ConfigMap!</h1>
+    </html>
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: combi
+  namespace: task-8-all
+spec:
+  selector:
+    matchLabels:
+      app: lesson-2-3
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lesson-2-3
+    spec:
+      securityContext:
+        runAsUser: 0    
+      containers:
+      - name: nginx
+        image: bitnami/nginx:1.19.0
+        ports:
+        - name: nginx
+          containerPort: 8080
+        volumeMounts:
+            - name: nginx-html-vol
+              mountPath: /app # for Bitnami Nginx
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080 
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 20
+          periodSeconds: 30
+        env:
+          - name: NGINX_HTTP_PORT_NUMBER
+            value: "8080"
+      - name: tool
+        image: wbitt/network-multitool
+        ports:
+        - name: tool
+          containerPort: 8081
+        env:
+          - name: HTTP_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: lesson-2-3-config
+                key: ToolPort
+      volumes:
+      - name: nginx-html-vol
+        configMap:
+          name: lesson-2-3-config
+          items:
+          - key: "HTML_File"
+            path: "index.html"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: combi
+  namespace: task-8-all
+spec:
+  selector:
+    app: lesson-2-3
+  ports:
+    - protocol: TCP
+      name: nginx
+      port: 9000
+      targetPort: nginx
+    - protocol: TCP
+      name: tool
+      port: 9001
+      targetPort: tool
+
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+  namespace: task-8-all
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+#    kubernetes.io/ingress.class: nginx
+#    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+#    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+#    cert-manager.io/issuer: "letsencrypt-staging"    
+    
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - work8.com # for SSL cert
+    secretName: domain-cert-secret
+  rules:
+  - host: work8.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: combi
+            port:
+              name: nginx
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: combi
+            port:
+              name: tool
+
+---
+#apiVersion: cert-manager.io/v1
+#kind: ClusterIssuer
+#metadata:
+#  name: linode-dns01
+##  namespace: task-8-all
+#spec:
+#  acme:
+#    server: https://acme-staging-v02.api.letsencrypt.org/directory 
+#    email: a.prokopyev.resume@gmail.com
+#    privateKeySecretRef: 
+#      name: linode-dns01-key 
+#    solvers:
+#    - dns01:
+#        webhook: # Linode
+#          solverName: linode
+#          groupName: acme.megpoid.dev # acme.slicen.me
+#          config:
+#            apiKeySecretRef: # Linode API token
+#              name: linode-credentials
+#              key: token
+
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: ingress-http01
+#  namespace: cert-manager
+#  namespace: task-8-all
+spec:
+  acme:
+#    server: https://acme-staging-v02.api.letsencrypt.org/directory 
+    server: https://acme-staging-v02.api.letsencrypt.org/directory 
+    email: a.prokopyev.resume@gmail.com
+    privateKeySecretRef: 
+      name: ingress-http01-key 
+    solvers:
+    - http01:
+        ingress:
+          ingressClassName: nginx
+#      selector:
+#        matchLabels:
+#          "use-http01-solver": "true"          
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: domain-cert
+  namespace: task-8-all
+spec:
+  secretName: domain-cert-secret2-by-cert-manager
+  issuerRef:
+#    name: linode-dns01
+#    kind: ClusterIssuer
+    name: ingress-http01
+    kind: Issuer
+  dnsNames:
+  - work8.com
+  - '*.work8.com'
+        
+---
+apiVersion: v1
+data:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUR4RENDQXF5Z0F3SUJBZ0lKQUxySjBPL1pmUE02TUEwR0NTcUdTSWIzRFFFQkN3VUFNSGN4Q3pBSkJnTlYKQkFZVEFsSlZNUXN3Q1FZRFZRUUlEQUpMVlRFTE1Ba0dBMVVFQnd3Q1MxVXhDekFKQmdOVkJBb01BbE5GTVFzdwpDUVlEVlFRTERBSkpWREVVTUJJR0ExVUVBd3dMYVc1bmNtVnpjeTVqYjIweEhqQWNCZ2txaGtpRzl3MEJDUUVXCkQyaGxiR3h2UUhkdmNteGtMbU52YlRBZUZ3MHlOREEzTXpFeE5USTJNak5hRncweU5UQTNNekV4TlRJMk1qTmEKTUhjeEN6QUpCZ05WQkFZVEFsSlZNUXN3Q1FZRFZRUUlEQUpMVlRFTE1Ba0dBMVVFQnd3Q1MxVXhDekFKQmdOVgpCQW9NQWxORk1Rc3dDUVlEVlFRTERBSkpWREVVTUJJR0ExVUVBd3dMYVc1bmNtVnpjeTVqYjIweEhqQWNCZ2txCmhraUc5dzBCQ1FFV0QyaGxiR3h2UUhkdmNteGtMbU52YlRDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVAKQURDQ0FRb0NnZ0VCQUx0bTcrcjhIYkRFaE1zNWxzTi9CQ0p2cS9sMkNCM2tXWHY4eDcyWEd1NWIxcmFvdlpWego2Y0lwWUF6YkF5WWh2UTRXUmR0TEdqUVgySVI3MUQ4RnFwRElpRllBZ3o5dlBrY1B2MVprODZ1T0N3Sk1FYlAyCll2cHE2MU04L3lzZmdVSjhWNy9IK1VVQnpYSjZrd2N3dHlST2VMNnFRVTA1RlFTV3pMRlJvZ09qTmhkM3RmY24KbU9Kbm1kNmNwM1FRQU93dEJvYm1WbnFITnpOTGpLL2Q1R0FPdERpblg1UmJ0TjEwRlBZbG1TajR6T2ozS1oregpJcjRaQTFYZ0paaVdTYm5FdXo0RUFEREV4NUlvTFVlNVUzdDFENmRQWXdDOUJjTU5jNlZnVHpuZDFZVmRBeXBPCmlTMlJWYkU1SFd4QXdkUXU1ZFFnVVNWOWlyVnFsMDQzcm5rQ0F3RUFBYU5UTUZFd0hRWURWUjBPQkJZRUZGeEwKRFpVY0pwcXU4ZXZLNDIrdVlPdFFDVTF6TUI4R0ExVWRJd1FZTUJhQUZGeExEWlVjSnBxdThldks0Mit1WU90UQpDVTF6TUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3RFFZSktvWklodmNOQVFFTEJRQURnZ0VCQUZRTDdSZ0gyWW1tCkJjaXdZVEFMRUR3d0xEWGE1VExGd2RTYVg4cGNZUmpxOHB6TUo1aGJjcEhmaFA3TytaemZzVkJUNkpHcWpXVHQKcDNWUjRmaTdJd2duQWNuVzNFdWVqblZ6NUdJODlZMkNSZlBKSGNHbWcrcDV1bFpleDlGUGU2cmFxNE1mUmNsRApxWDVGbUtQYWJhMk93cE0yYml5bHkvUlVodzNYWXdsYXhEUmNDTTNWZ3IwWlhHUkdOb2d3SExUUmR2WEVLRFNPCk5EL1oxTFVXeEdQY1hJUU5NYW1PcjV1ZWk1OXRySkliMGVBU1lNd2lGNDg3Z2JTcXJxWkVTVjBJZnpYOVpWR2kKQ3N6MnM2c1FYQk9SR2F5V215RkVicUpWK0NrakhPcmVHckhvM2JFU0RRNlFOVVY5aWo2UktqczJmM3VaMXNVZQpabExVandwQ21tMD0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+  tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRQzdadS9xL0Iyd3hJVEwKT1piRGZ3UWliNnY1ZGdnZDVGbDcvTWU5bHhydVc5YTJxTDJWYytuQ0tXQU0yd01tSWIwT0ZrWGJTeG8wRjlpRQplOVEvQmFxUXlJaFdBSU0vYno1SEQ3OVdaUE9yamdzQ1RCR3o5bUw2YXV0VFBQOHJINEZDZkZlL3gvbEZBYzF5CmVwTUhNTGNrVG5pK3FrRk5PUlVFbHN5eFVhSURvellYZDdYM0o1amlaNW5lbktkMEVBRHNMUWFHNWxaNmh6Y3oKUzR5djNlUmdEclE0cDErVVc3VGRkQlQySlprbytNem85eW1mc3lLK0dRTlY0Q1dZbGttNXhMcytCQUF3eE1lUwpLQzFIdVZON2RRK25UMk1BdlFYRERYT2xZRTg1M2RXRlhRTXFUb2t0a1ZXeE9SMXNRTUhVTHVYVUlGRWxmWXExCmFwZE9ONjU1QWdNQkFBRUNnZ0VBVFRRSUROK1dmN2RHR2M3OHpFY3NkZDlaa3VqTVNUeEVuUzZ6UHVqY1lHd1gKVmFMSWo2UjBIZGdieU5BRlNSVkhKR0dLbitBZHlHNDJkY1hwMTVqRy91U09QaGZ4K2hVaksvVlIxdzY1eitneApvdDJod1dqMHQ4T0tkUDFCQmd2eG5XbEtZU2pLQ1dMSHQ2ekZtNFczUFU3U3NZSEVhMExqNU1NWFNzbWRuQzlRCkE3dU5jajB3OHBGbGdDRWoxY0dQMXgzL2wyM0NRR0YwY0xoS1BKbkVlTUQ2NTg4U00zTVpycnFnU2Z3S0NlcnkKeHprbC9ad2JKQnd3QnZzV0ZXK0JwaUZqcVdhV0dCSHBINWMwYlVwVno5WWhOSUtEZEtOVGhNc3FQenk2WEpGZwpsaHBkNHZzTnVSZk1UWU9TMVRPbG5yY1h5aXlNa0l2L0tLT0hnQ1R6N1FLQmdRRDM1TzgxMHordm1CVHlMMCsvCkcxanRXUXczVVJVM0F5aElXbE9TWEVnejc4UzBzczljZU4ydHpoTjcyRWg5cjVFVmhqZjlPRlErOWFEY2xNTG8KLzFKSWVUcTZwWXl0U1p6M2tuTXVzZVg5b2laL2lqSW51NktUS0dDd0pZZ0ZYSk1qcyt4MkNkNFdGRVJ1c29LWQpGcXhDWDRLWUpBZ3l4UFBMbk44UFI4NzY3d0tCZ1FEQmg2TUNrd2JsYWg4bUtHOHFjZ1MxUXhDcUpFV3ROK2I0CmRlQm9DclVTeWVxaUVtY1h5RWJoUnM0aHozbHFSTWYxdDdsQk4vMHcrMnZ0a1Z6VXJFQ05mZW9qL2tVcmM4bysKY3E0NzE3bjlTK0JkWEdPZGtSQjRwd2hlQldDMUhGSHJGWFozMFZlbDMyWStWckl4bnc5S0QyUU9mU29BL2ZNOApFZVJLR2k4TkZ3S0JnUURkSWczNXQrNlIxMXFvQ0doZEZDb3A0RXV6ZE5NMTljMFRiZkFyR2NNWEFZWTVvMkN6Ckh1YXhTcW02eWw4d0wxTi9IZklJSXgyVDVFMlJOK3IvS2ZQZXpyWURGZmIrQmpMTjdvaHRXU2pQTHJ5ay9VUnMKaVVjbmV0ZDFpcVZpRXdqMnltUGZrRUhhOUUxdmFqSnhOWmlJeE9hY2pWZjY0aEtReWVsNW1oY2JaUUtCZ0dCaApLajlYOVhFL0huQWtadWhlakJXeFpwVTFKellTeHdZcHZpNVNWc2NhbzYwL09QUlJHMnVKbFpLay9yUjd1SkdZCmc3d0ZKQ1RHc1lOSWgxQ3EwQ01tOS9vZzRWVzRmcG9IQnRwcW53ZVVTQkoydG0xOEZ4WGZLWDJaZEFYK0twWEcKeEk3N1JJa283b1JSTE1FbGs3bXdYSVlTczE1M0dqRnFQNlRmMFZyVkFvR0FNbzFEZUsxbXBkM1dObWxSMjdtOApveTMxK3RLb1NYVm9Rai9LaTVVV3B0QmdHNWd4K2lYdnUxclAxc1MrT2s5ZWN5VEtYdStoRjBVVnBSelI2eVFjCm55dEUwbWlsOUlNS0twd1I2T0Q5NEFqWFBzTU5aV2FOVndnSkxzYm1ETWM5Tnd5bUg3S2dDY3gxWlUzN1NxN1YKb0k2OU83T240RlN1Wmp1NFd2cm05UmM9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+kind: Secret
+metadata:
+  creationTimestamp: "2024-07-31T15:50:48Z"
+  name: domain-cert-secret
+  namespace: task-8-all
+  resourceVersion: "66516"
+  uid: 8ede5eda-ae9b-4369-8f67-b729803845a5
+type: kubernetes.io/tls
