@@ -1,0 +1,21 @@
+classes:
+  - kapitan
+  - netology
+  
+parameters:
+  TargetName: ${_reclass_:name:short}
+  Namespace: ${TargetName}
+
+  NginxImage: bitnami/nginx:1.19.0
+  NginxPort: 8080
+  NginxServicePort: 9000
+
+  kapitan:
+    compile:
+      - output_path: .
+        input_type: jinja2
+        input_paths:
+          - src/work9/*.yml
+          - src/work9/*.sh
+#    vars:
+#

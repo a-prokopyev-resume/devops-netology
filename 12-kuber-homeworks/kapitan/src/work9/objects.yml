@@ -1,0 +1,52 @@
+{% set P = inventory.parameters %}
+{% set AppName = P.TargetName+'-app' %}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: {{ P.TargetName }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ AppName }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ AppName }}
+    spec:
+      containers:
+        - name: nginx
+          image: {{ P.NginxImage }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: netology-viewer
+  namespace: {{ P.TargetName }}
+subjects:
+- kind: User
+  name: {{ P.netology.student.user }}
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: viewer
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: {{ P.TargetName }}
+  name: viewer
+rules:
+- apiGroups: [""]
+  resources: ["pods","pods/log"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: ["extensions", "apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  
