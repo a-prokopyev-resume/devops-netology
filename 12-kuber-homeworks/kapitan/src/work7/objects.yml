@@ -1,0 +1,108 @@
+{% set P = inventory.parameters %}
+{% set AppName = P.TargetName+'-app' %}
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ P.TargetName }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-7-all
+  namespace: {{ P.TargetName }}
+spec:
+  selector:
+    matchLabels:
+      app: lesson-7-1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lesson-7-1
+    spec:
+      containers:
+      - name: writer
+        image: {{ P.WriterImage }}
+        command: ['sh', '-c', 'while true; do echo "=> $(date): - Hello from writer container" >> {{ P.GuestMountPoint }}/writer.log; sleep 1s; done']
+#mkdir -p /mnt/writer && 
+        volumeMounts:
+        - name: shared
+          mountPath: {{ P.GuestMountPoint }}
+      - name: reader
+        image: {{ P.ToolImage }}
+#        command: ['bash', '-lc', 'tail -f {{ P.GuestMountPoint }}/writer.log']
+        command: ['bash', '-lc', 'sleep 1h']
+        volumeMounts:
+        - name: shared
+          mountPath: {{ P.GuestMountPoint }}
+          readOnly: true
+      volumes:
+      - name: shared
+        persistentVolumeClaim:
+          claimName: pvc2
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: local
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: local-storage
+  hostPath:
+    path: /tmp/pv1
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc1
+  namespace: {{ P.TargetName }}
+spec:
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs
+spec:
+  capacity:
+    storage: 2Mi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: nfs-server
+    path: "/"
+  mountOptions:
+    - nfsvers=4.2
+  storageClassName: nfs-pod
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc2
+  namespace: {{ P.TargetName }}  
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: "nfs-pod"
+  resources:
+    requests:
+      storage: 1Mi
+  volumeName: nfs
+
+

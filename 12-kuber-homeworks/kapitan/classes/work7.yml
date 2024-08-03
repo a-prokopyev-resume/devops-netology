@@ -1,0 +1,24 @@
+classes:
+  - kapitan
+  - netology
+  
+parameters:
+  TargetName: ${_reclass_:name:short}
+  Namespace: ${TargetName}  
+
+  ToolImage: wbitt/network-multitool
+#  ToolPort: 8081
+#  ToolServicePort: 9001
+  
+  WriterImage: busybox:1.29
+  GuestMountPoint: /mnt
+  
+  kapitan:
+    compile:
+      - output_path: .
+        input_type: jinja2
+        input_paths:
+          - src/work7/*.yml
+          - src/work7/*.sh
+#    vars:
+#

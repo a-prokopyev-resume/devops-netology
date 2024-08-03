@@ -1,0 +1,16 @@
+# PersistentVolumeClaim for Canonical's Charmed Distribution of Kubernetes.
+# It is a mod of https://github.com/kubernetes/examples/blob/master/staging/volumes/nfs/provisioner/nfs-server-cdk-pv.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pv-provisioning-demo
+  labels:
+    demo: nfs-pv-provisioning
+spec:
+  accessModes: [ "ReadWriteOnce" ]
+  resources:
+    requests:
+      storage: 10Gi
+#  storageClassName: cdk-cinder
+

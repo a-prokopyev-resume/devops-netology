@@ -1,0 +1,99 @@
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: task-7-all
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-7-all
+  namespace: task-7-all
+spec:
+  selector:
+    matchLabels:
+      app: lesson-7-1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lesson-7-1
+    spec:
+      containers:
+        - name: writer
+          image: busybox:1.29
+          command: ['sh', '-c', 'while true; do echo "=> $(date): - Hello from writer container" >> /mnt/writer.log; sleep 1s; done']
+          #mkdir -p /mnt/writer && 
+          volumeMounts:
+            - name: shared
+              mountPath: /mnt
+        - name: reader
+          image: wbitt/network-multitool
+          #        command: ['bash', '-lc', 'tail -f /mnt/writer.log']
+          command: ['bash', '-lc', 'sleep 1h']
+          volumeMounts:
+            - name: shared
+              mountPath: /mnt
+              readOnly: true
+      volumes:
+        - name: shared
+          persistentVolumeClaim:
+            claimName: pvc2
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: local
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: local-storage
+  hostPath:
+    path: /tmp/pv1
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc1
+  namespace: task-7-all
+spec:
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs
+spec:
+  capacity:
+    storage: 2Mi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.128.62.128
+    path: "/"
+  mountOptions:
+    - nfsvers=4.2
+  storageClassName: nfs-pod
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc2
+  namespace: task-7-all
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: "nfs-pod"
+  resources:
+    requests:
+      storage: 1Mi
+  volumeName: nfs
