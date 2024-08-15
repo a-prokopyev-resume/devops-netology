@@ -1,0 +1,21 @@
+apiVersion: k0sctl.k0sproject.io/v1beta1
+kind: Cluster
+metadata:
+  name: k0s-cluster
+spec:
+  hosts:
+  - role: controller+worker
+#    name: master1
+    ssh:
+      address: 89.169.137.252
+      user: root # netology
+      port: 22
+      keyPath: ~/.ssh/id_ed25519
+  - role: worker
+#    name: worker1
+    ssh:
+      address: 89.169.143.104
+      user: root # netology
+      port: 22
+      keyPath: ~/.ssh/id_ed25519
+  
