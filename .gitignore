@@ -17,6 +17,8 @@
 /**/.secrets
 /**/secrets.tf
 /**/terraform.tfstate*
+/**/.terragrunt-cache
+/**/.terraform.lock.hcl
 /**/personal.auto.tfvars
 /**/.terraform
 /**/.git

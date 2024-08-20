@@ -1,0 +1,27 @@
+#cloud-config
+users:
+  - name: ${ssh_user}
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+  - name: root
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+      
+package_update: true
+package_upgrade: false
+packages:
+ - mosh
+ - joe
+ - mc
+ - htop
+ - curl
+ - dstat
+ - axel
+# - docker.io
+runcmd:
+ - axel --num-connections=10  https://github.com/docker/compose/releases/download/v2.28.1/docker-compose-linux-x86_64 --timeout=60 --output /usr/local/bin/docker-compose && chmod 755 /usr/local/bin/docker-compose
+# - curl -L https://github.com/docker/compose/releases/download/v2.28.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose && chmod 755 /usr/local/bin/docker-compose
+
