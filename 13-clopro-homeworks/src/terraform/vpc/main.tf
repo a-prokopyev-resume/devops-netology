@@ -33,7 +33,9 @@ resource "yandex_resourcemanager_folder_iam_member" "required_roles" {
     "resource-manager.admin",
     "vpc.admin",
     "compute.admin",
-    "storage.editor"
+    "storage.editor",
+    "kms.keys.encrypter",
+    "kms.keys.decrypter"
   ])
   folder_id = local.datacenter_config.folder_id
   role      = each.value

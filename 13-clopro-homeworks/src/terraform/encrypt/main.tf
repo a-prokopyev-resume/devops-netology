@@ -21,71 +21,17 @@
 # is STRONGLY PROHIBITED to use this file by any method.
 #================================================== The End of the Copyright Notice ======================================================
 
-# ===> Input from encrypt TF module:
-variable "key_id" {
-  type = string
-  default = null
-}
 
 data "yandex_iam_service_account" "tf_backend" {
   name = "tf-backend"
 }
 
-locals {
-  bucket = "alex.pro-${formatdate("YYYY-MM-DD-HH-mm-ss", timestamp())}"
+resource "yandex_kms_symmetric_key" "this" {
+  name = "golden"
+  default_algorithm = "AES_256"
+  rotation_period = "24h"
 }
 
-resource "yandex_iam_service_account_static_access_key" "this" {
-  service_account_id = data.yandex_iam_service_account.tf_backend.id
+output "key_id" {
+   value = yandex_kms_symmetric_key.this.id
 }
-
-resource "yandex_storage_bucket" "picture" {
-  access_key = yandex_iam_service_account_static_access_key.this.access_key
-  secret_key = yandex_iam_service_account_static_access_key.this.secret_key
-  bucket = local.bucket
-  acl    = "public-read"
-#  max_size = 100000
-  force_destroy = true
-
-  anonymous_access_flags {
-    read = true
-    list = true
-    config_read = true
-  }
-
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        kms_master_key_id = var.key_id
-        sse_algorithm = "aws:kms"
-      }
-    }
-  }
-
-  lifecycle_rule {
-    enabled = true
-    expiration {
-      days = 1
-    }
-  }
-
-
-}
-
-resource "yandex_storage_object" "this" {
-  access_key = yandex_iam_service_account_static_access_key.this.access_key
-  secret_key = yandex_iam_service_account_static_access_key.this.secret_key
-  bucket = local.bucket
-  key    = "picture.png"
-  source = "picture.png"
-  acl = "public-read"
-  depends_on = [yandex_storage_bucket.picture]
-}
-
-
-# =====> Outputs from the module:
-
-output "name" {
-   value = yandex_storage_bucket.picture.bucket
-}
-
