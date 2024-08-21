@@ -3,7 +3,7 @@ terraform {
 }
 
 dependency "subnet1" {
-  config_path = "../../subnet1"
+  config_path = "../subnet1"
 }
 
 inputs = {

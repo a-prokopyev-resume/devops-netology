@@ -53,14 +53,28 @@ resource "yandex_storage_bucket" "picture" {
     config_read = true
   }
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        kms_master_key_id = var.key_id
-        sse_algorithm = "aws:kms"
+  dynamic "server_side_encryption_configuration" {
+    for_each = var.key_id != null ? [1] : []
+    content {
+      rule {
+        apply_server_side_encryption_by_default {
+          kms_master_key_id = var.key_id
+          sse_algorithm     = "aws:kms"
+        }
       }
     }
   }
+
+
+#  server_side_encryption_configuration {
+#    rule {
+#      apply_server_side_encryption_by_default {
+#        kms_master_key_id = var.key_id
+#	sse_algorithm = var.key_id != null ? "aws:kms" : null
+##        sse_algorithm = "aws:kms"
+#      }
+#    }
+#  }
 
   lifecycle_rule {
     enabled = true

@@ -3,7 +3,7 @@ terraform {
 }
 
 dependency "subnet1" {
-  config_path = "../../subnet1"
+ config_path = "../../work1/subnet1"
 }
 
 dependency "bucket" {

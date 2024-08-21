@@ -1,14 +1,10 @@
 terraform {
-  source = "../../terraform/subnet"
+  source = "../../../terraform/subnet"
 }
 
 dependency "vpc" {
-  config_path = "../vpc"
+  config_path = "../../vpc"
 }
-
-#dependency "route" {
-#  config_path = "../lesson1"
-#}
 
 inputs = {
 	subnet_name = "public"
