@@ -1,8 +1,9 @@
 # Course: [DevOps-Netology](https://netology.ru/programs/devops)
 
-## Class (Stream): DevOps-27 during 2023
+## Class (Stream): DevOps-27 during 2023-2024
 
-### Student: Alexander Prokopyev (AlexPro in Discord)
+### Student: Alexander Prokopyev
+### Telegram: https://t.me/sanyo_tutor
 
 Адреса моих учебных репозиториев (основной репозиторий на Github и еще зеркала на GitLab и Bitbucket):
 
