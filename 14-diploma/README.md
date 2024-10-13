@@ -13,12 +13,102 @@
 
 ### Установка и настройка локального Drone CI, интегрированного с Gitea
 
-Для этого я написал гибко конфигурируемый `docker-compose`, который позволяет задавать все важные параметры (около десятка параметров) установки связки `Gitea` + `Drone CI` в файле `.env`.
-Кроме того сделал удобный скрипт запуска и перезапуска `docker-compose` в различных конфигурациях.
+Для этого я написал гибко конфигурируемый `docker-compose.yml`, который позволяет задавать все важные параметры (около десятка параметров) установки связки `Gitea` + `Drone CI` в файле `.env`.
+
+<details>
+    <summary>: Исходный код файла .env ...  </summary>
+
+```
+#=== Gitea:
+GITEA_HOST=gitea.<mydomain>.com 
+# gitea
+
+GITEA_DOMAIN=${GITEA_HOST}
+GITEA_DOMAIN_TRAEFIK=gitea.<mydomain>.com
+GITEA_IP=192.168.0.<xxx>
+GITEA_INT_PORT=80
+GITEA_EXT_PORT=80
+GITEA_PORTS="${GITEA_IP}:${GITEA_EXT_PORT}:${GITEA_INT_PORT}"
+
+#GITEA_VERSION=1.22.2
+GITEA_VERSION=1.21.11
+
+GITEA_ADMIN_USER=<xxx>
+
+# unused#
+ACME_EMAIL=acme@<mydomain>.com
+
+
+LINODE_TOKEN=<xxx>
+
+#=== Drone:
+DRONE_HOST=drone
+DRONE_DOMAIN_TRAEFIK=drone.<mydomain>.com
+DRONE_DOMAIN=${DRONE_HOST}
+DRONE_IP=192.168.0.<xxx>
+DRONE_INT_PORT=80
+DRONE_EXT_PORT=80
+DRONE_PORTS="${DRONE_IP}:${DRONE_EXT_PORT}:${DRONE_INT_PORT}"
+
+#DRONE_VERSION=2.4
+DRONE_VERSION=2.24
+DRONE_RUNNER_VERSION=1.8.3
+
+DRONE_RPC_SECRET=<xxx>
+DRONE_USER_CREATE="username:${GITEA_ADMIN_USER},machine:false,admin:true,token:${DRONE_RPC_SECRET}"
+
+DRONE_GITEA_CLIENT_ID=<xxx>
+DRONE_GITEA_CLIENT_SECRET=<xxx>
+
+```
+
+</details>
+
+В такой конфигурации `Drone CI` интегрирован с `Gitea` и вход в `Drone CI` осуществляется через OAuth провайдер `Gitea`.
+
+   
+Кроме того сделал удобный скрипт запуска и перезапуска `docker-compose` в различных конфигурациях:
+<details>
+    <summary>: Исходный код файла restart.sh ...  </summary>
+
+```
+#!/bin/bash
+
+Action=$1;
+
+case $Action in
+        ( all )
+                StopProfiles=" --profile server --profile runner ";
+                #Profiles=" --profile server ";
+                StartProfiles=" --profile server --profile runner "; # for local runner
+        ;;
+        ( gitea )
+                StopProfiles=" --profile gitea ";
+                #Profiles=" --profile server ";
+                StartProfiles=" --profile gitea ";
+        ;;
+esac;
+
+./render_tpl.sh;
+
+docker-compose $StopProfiles down;
+
+/utils/docker/clean_stopped.sh;
+
+docker-compose $StartProfiles up -d;
+
+```
+
+</details>
+
+Скриншоты GUI `Gitea` и `Drone CI`:
+![](images/gitea.png)
+![](images/gitea_first_commit.png)
+![](images/droneci.png)
 
 ### Создание и сборка тестового приложения
 
-Сборка и деплой тестового приложения обеспечивается пайплайнами из файла `test-app/.drone.yml` (test-app - это отдельный репозиторий `alexpro/test-app`):
+Сборка и деплой тестового приложения обеспечивается пайплайнами из файла `test-app/.drone.yml` (каталог `test-app` - это отдельный дополнительный `Git` репозиторий `alexpro/test-app`):
 * `push` - сборка образа и сохранение его в `registry` с тэгом `:latest`
 * `tag` - сборка приложения и сохранение его в `registry` с указанным тэгом.
 * `promote` - установка приложения командой `kubectl apply -f`. Причём этот пайплайн работает только для повторного запуска после события `tag`, т.ё. только для тэгированных коммитом и соответственно потом успешно собрынных образов контейнеров.
