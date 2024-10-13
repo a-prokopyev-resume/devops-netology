@@ -65,6 +65,7 @@ DRONE_GITEA_CLIENT_SECRET=<xxx>
 </details>
 
 В такой конфигурации `Drone CI` интегрирован с `Gitea` и вход в `Drone CI` осуществляется через OAuth провайдер `Gitea`.
+В `Gitea` настроен вебхук для отправки событий от коммитов в `Drone CI`.
 
    
 Кроме того сделал удобный скрипт запуска и перезапуска `docker-compose` в различных конфигурациях:
@@ -111,31 +112,278 @@ docker-compose $StartProfiles up -d;
 Сборка и деплой тестового приложения обеспечивается пайплайнами из файла `test-app/.drone.yml` (каталог `test-app` - это отдельный дополнительный `Git` репозиторий `alexpro/test-app`):
 * `push` - сборка образа и сохранение его в `registry` с тэгом `:latest`
 * `tag` - сборка приложения и сохранение его в `registry` с указанным тэгом.
-* `promote` - установка приложения командой `kubectl apply -f`. Причём этот пайплайн работает только для повторного запуска после события `tag`, т.ё. только для тэгированных коммитом и соответственно потом успешно собрынных образов контейнеров.
+* `promote` - установка приложения командой `kubectl apply -f`. Причём этот пайплайн работает только для повторного запуска после события `tag`, т.ё. только для тэгированных коммитов и соответственно потом успешно собранных образов контейнеров.
 * `rollback` - удаление приложения командой `kubectl delete -f`
 
 В качестве `registry` для образов контейнеров собранного приложения я использовал отдельный `Gitea` репозиторий:
 `alexpro/test-app-image`. Пока этот репозиторий находится локально, он доступен для managed кластера `K8s` через туннель, который включается кратковременно на время проверки.
 
+Скриншот сборки тестового приложения с тэгом `1.2.3-diploma`:
+![](images/test-app-build2.png)
+
+Я сделал два варианта пайплайнов с запуском сборки в `DinD` и в хостовом `Docker`.
+Хостовый работает быстрее из-за медленной работы FS в `DinD`, но `DinD` считается безопаснее, хотя с моей точки зрения для большей безопасности лучше запускать сборку в `Podman` желательно `rootless`, в т.ч. в так называемом `PinD` (когда `Podman` контейнер запускается в `Docker` контейнере) и конечно на отдельном эфимерном облачном хосте для сборочного `Drone CI runner`.
+
+<details>
+    <summary>: Фрагменты моего исходного кода сборочного пайплайна .drone.yml ...  </summary>
+
+```
+---
+kind: pipeline
+type: docker
+name: Build
+trigger:
+  repo:
+  - alexpro/test-app
+  event:
+  - custom
+  - push
+  - tag
+tasks:
+ - name: Build Dockerfile by my own script
+    when:
+#      branch: DISABLED_TASK # for debugging   
+    image: docker:cli
+    environment:
+      GITEA_USER:
+        from_secret: GiteaUser
+      GITEA_PASSWORD:
+        from_secret: GiteaPassword
+    volumes:
+      - name: hostsock
+        path: /var/run/docker.sock
+#      - name: dindsock
+#        path: /var/run        
+#    services:
+#      - docker:dind                
+    commands:
+      - set -x; echo $GITEA_PASSWORD | docker login -u $GITEA_USER --password-stdin $DOCKER_REGISTRY;
+#     - sleep 20s; docker pull $DockerImageName:latest; # Used for testing only
+      - sleep 30s; docker build -t $DockerImageName:latest .; # --pull # Whole line commented when testing
+      - docker push $DockerImageName:latest;
+      - |
+        if [ -n "$DRONE_TAG" ]; then
+          docker tag $DockerImageName:latest $DockerImageName:"$DRONE_TAG";
+          docker push $DockerImageName:"$DRONE_TAG";
+        fi
+
+services:
+- name: docker
+  image: docker:dind #_DISABLE
+  privileged: true
+  volumes:
+  - name: dindsock
+    path: /var/run
+  failure: ignore # for _DISABLE above
+  when:
+    branch: DISABLED_TASK # for debugging 
+
+volumes:
+- name: dindsock
+  temp: {}
+- name: hostsock
+  host:
+    path: /var/run/docker.sock
+```
+
+</details>
+
+
 ### Создание облачной инфраструктуры (managed кластера Kubernetes)
 В качестве кластера `K8s` я использую managed PaaS `K8s` в облаке `Yandex`.
-Для начального развёртывания кластера `K8s` я написал модули `Terraform`, которые управляются моими модулями `Terragrunt` для удобства параметризации. 
+Для начального развёртывания кластера `K8s` я написал модули `Terraform`, которые управляются моими модулями `Terragrunt` для удобства параметризации:
+<details>
+    <summary>: Фрагмент моего исходного кода файла vpc/terragrunt.hcl ...  </summary>
+
+```
+terraform {
+  source = "../../../../../terraform/k8s/vpc"
+}
+
+locals  {
+  single_master = [
+    {
+      "v4_cidr_blocks" : ["10.121.0.0/16"],
+      "zone" : "ru-central1-a"
+    }
+  ]
+
+  ha_master = [
+    {
+      "v4_cidr_blocks" : ["10.121.0.0/16"],
+      "zone" : "ru-central1-a"
+    },
+    {
+      "v4_cidr_blocks" : ["10.131.0.0/16"],
+      "zone" : "ru-central1-b"
+    },
+    {
+      "v4_cidr_blocks" : ["10.141.0.0/16"],
+      "zone" : "ru-central1-d"
+    }
+  ]
+}
+
+inputs = {
+   subnets = local.single_master
+#   subnets = local.ha_master
+}
+```
+
+</details>
+
+Выбирая в качестве значения подсетей `local.single_master` или `local.ha_master`, можно влиять на тип отказоустойчивости создаваемого кластера.
+
+<details>
+    <summary>Фрагмент моего исходного кода файла cluster/terragrunt.hcl ...  </summary>
+
+```
+
+terraform {
+  source = "../../../../../terraform/k8s/cluster"
+}
+
+dependency "vpc" {
+  config_path = "../vpc"
+}
+
+inputs = {
+
+  subnets = dependency.vpc.outputs.public_subnets
+
+  node_groups = {
+    "yc-k8s-ng" = {
+      fixed_scale = {
+        size = 1
+      }
+      node_labels = {
+        role        = "yc-k8s-ng-worker"
+        environment = "testing"
+      }
+      max_expansion   = 1
+      max_unavailable = 1
+
+      platform_id     = "standard-v2"
+
+      auto_repair     = true
+      auto_upgrade    = false
+      enable_oslogin_or_ssh_keys = true
+
+      network_acceleration_type = "standard"
+      container_runtime_type    = "containerd"
+
+    } # "yc-k8s-ng" 
+  } # node_groups
+
+
+  node_groups_defaults = {
+    core_fraction = 100
+    disk_size = 64
+    disk_type = "network-ssd"
+    ipv4 = true
+    ipv6 = false
+    nat = true # for OS login
+    node_cores = 2
+    node_gpus = 0
+    node_memory = 2
+    platform_id = "standard-v1"
+    preemptible = true
+  } # node_groups_defaults
+
+} # inputs
+
+```
+
+</details>
+
 Для запуска модулей `Terragrunt` я создал вспомогательный `Bash` скрипт `ctl.sh`, который в свою очередь вызывается из пайплайна `.drone.yml` по следующим `CI/CD` событиям:
 * `push` - проверка плана `Terragrunt`
 * `promote` - создание инфраструктуры командой `apply`, сразу же запускается и настройка кластера (установка и настройка дополнительного софта типа мониторинга)
 * `rollback` - удаление инфраструктуры командой `destroy`
+<details>
+    <summary>: Фрагмент моего кода скрипта ctl.sh   ...  </summary>
+
+```
+clean_cache()
+{
+        rm -Rf ./*/.terragrunt-cache;
+        rm -Rf ./*/*/.terragrunt-cache;
+}
+
+destroy_infra()
+{
+        terragrunt run-all destroy $Options $Options2;
+        yc_delete; 
+        clean_cache;
+}
+
+create_infra()
+{
+        terragrunt run-all apply $Options $Options2;
+}
+
+plan_infra()
+{
+        ( cd vpc; terragrunt apply  $Options $Options2 );
+        terragrunt run-all plan --terragrunt-ignore-dependency-errors $Options;
+}
+
+
+case $Action in
+        ( list )
+                ./list.sh;
+        ;;
+        ( plan )
+                plan_infra;
+        ;;
+        ( create )
+                create_infra;
+        ;;
+        ( destroy )
+                destroy_infra;
+        ;;
+        ( recreate )
+                destroy_infra;
+                ./list.sh;
+                create_infra;
+        ;; 
+        ( * )
+                echo "Error: unknown action!";
+                exit 1;
+        ;;
+esac;
+./list.sh;
+
+```
+
+</details>
+
+Скриншоты запуска пайплайна планирования инфраструктуры кластера:  
+![](images/terragrunt-plan.png)
+
+Перезапуск пайплайна с опцией `promote`:  
+![](images/terragrunt-promote-gui.png)
+
+`Promoted` пайплайн - результат запуска:  
+![](images/terragrunt-apply.png)
+
+Созданный кластер:  
+![](images/yc-k8s.png)
+
+
 
 ### Настройка кластера
 Установка вспомогательных приложений (кроме тестового приложения) типа мониторинга  происходит на шаге `promote` пайплайна для создания кластера `K8s`.
 `Grafana` с `Prometheus` ставится одним `helm` пакетом с небольшими модификациями `values.yml` для открытия их портов на соответствующих сервисах типа `NodePort`.
 
-По завершении запуска модулей `Terragrant` и `Terraform` мой скрипт автоматически прописывает новые `K8s credentials` в конфиг `kubectl` и копирует их (токен и сертификат) в секреты `Drone CI` для
-последующего  деплоя тестового приложения.
+По завершении запуска модулей `Terragrant` и `Terraform` мой скрипт автоматически прописывает новые `K8s credentials` в конфиг `kubectl` и копирует их (токен и сертификат) в секреты `Drone CI` для последующего  деплоя тестового приложения.
 
 ### Установка и настройка CI/CD для тестового приложения
 
 * Деплой тестового приложения происходит с помощью повторного запуска пайплайна уже успешно собранного ранее билда тестового приложения, но с признаком `promote` в среду `prod`. Доступ к порту приложения обеспечивается тоже через `NodePort`.
 * Удаление приложения происходит по `CI/CD` событию `rollback`.
+
+
 
 ---
 
