@@ -1,0 +1,10 @@
+[Unit]
+Description=test process monitoring
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/monitor.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
