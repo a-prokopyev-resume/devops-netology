@@ -1,0 +1,264 @@
+---
+#=============================================== The Beginning of the Copyright Notice ===================================================
+# The AUTHOR of this file and the owner of all exclusive rights in this file is Alexander Borisovich Prokopyev
+# born on December 20, 1977 resident of the city of Kurgan, Russia;
+# Series and Russian passport number of the AUTHOR (only the last two digits for each one): **22-****91
+# Russian Individual Taxpayer Number of the AUTHOR (only the last four digits): ********2007
+# Russian Insurance Number of Individual Ledger Account of the AUTHOR (only the last five digits): ***-***-859 04
+# Copyright (C) Alexander B. Prokopyev, 2024, All Rights Reserved.
+# Contact of the AUTHOR: a.prokopyev.resume at gmail dot com
+#
+# All source code and other content contained in this file is protected by copyright law.
+# This file is licensed by the AUTHOR under AGPL v3 (GNU Affero General Public License): https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# THIS FILE IS LICENSED ONLY PROVIDED FOLLOWING RESTRICTIONS ALSO APPLY:
+# Nobody except the AUTHOR may alter or remove this copyright notice from any copies of this file content (including modified fragments).
+# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+#
+# ATTENTION: If potential user's or licensee's country laws collide or are not compatible with the terms of this copyright notice or 
+# if a potential user or licensee does not agree with the terms of this copyright notice then such potential user or licensee  
+# is STRONGLY PROHIBITED to use this file by any method.
+#================================================== The End of the Copyright Notice ======================================================
+
+#- name: Hello from role
+#  ansible.builtin.debug:
+#    msg: Hello from role!
+
+#- name: Installation
+#  ansible.builtin.include_tasks:
+#    file: install.yml
+##  when: false # for testing
+
+- name: Purge old installation of PostgreSQL
+  ansible.builtin.apt:
+    name:
+      - postgresql
+    state: absent
+    purge: yes
+#  when: false # testing
+
+- name: Install corresponding distro packages
+  ansible.builtin.apt:
+    name:
+      - postgresql
+      - python3-psycopg2
+    state: present
+    update_cache: yes
+
+- name: Run pg_lsclusters to get cluster information
+  command: pg_lsclusters
+  register: pg_clusters_output
+
+- name: Parse the output to get PG version
+  set_fact:
+    pg_version: "{{ item.split()[0] }}"
+  loop: "{{ pg_clusters_output.stdout_lines }}"
+  when: "'main' in item"
+
+#- name: Ensure main instance of PostgreSQL is running to gather PostgreSQL DBMS version information from it
+#  command: "pg_ctlcluster 15 main start || pg_ctlcluster 14 main start || pg_ctlcluster 13 main start"
+#  systemd: 
+#    name: "postgresql"
+#    state: started
+
+#- name: Gather PostgreSQL version information
+#  community.postgresql.postgresql_info:
+#    filter: ver*
+#  register: pg_info
+#  become: true
+#  become_user: postgres
+
+#- name: Display PostgreSQL version
+#  debug:
+#   msg: "PostgreSQL version: {{ pg_info.version }}"
+
+#- name: Set variables
+#  set_fact:
+#    pg_version: "{{ pg_info.version.major }}"
+
+- name: Set more dependant variables
+  set_fact:
+    config_dir: "{{ etc_dir }}/{{ pg_version }}/{{ cluster_name }}"
+    service_name: "postgresql@{{ pg_version }}-{{ cluster_name }}"
+
+- name: Stop main instance of PostgreSQL to avoid interference (for testing)
+  systemd: 
+    name: "postgresql@{{ pg_version }}-main"
+    state: stopped
+
+- name: Create data_dir
+  become: yes
+  file:  
+    path: "{{ data_dir }}"
+    state: directory  
+    owner: postgres
+    group: postgres
+    mode: '0700'
+
+- name: Initialize database  
+  command: pg_createcluster -d "{{ data_dir }}" "{{ pg_version }}" "{{ cluster_name }}"
+#  sudo -u postgres "{{ first_subdirectory }}/bin/initdb" -D "{{ data_dir }}" # fix_05
+  become: yes
+  ignore_errors: yes
+
+- name: Apply custom HBA rules
+  community.postgresql.postgresql_pg_hba:
+    rules: "{{ hba_rules }}"
+    dest: "{{ config_dir }}/pg_hba.conf"
+    create: true
+    overwrite: true
+    rules_behavior: combine
+#  when: false
+
+- name: Allow all IP addresses to connect to PostgreSQL temporarily
+  community.postgresql.postgresql_pg_hba:
+    dest: "{{ config_dir }}/pg_hba.conf"
+    contype: host
+    databases: all
+    users: all
+    source: 0.0.0.0/0 
+    method: trust   
+    state: present
+
+#- name: Reload PostgreSQL configuration
+#  community.postgresql.postgresql_set:
+#    name: reload
+#    value: true
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart new PostgreSQL systemd service to apply recently changed options
+  systemd: 
+    name: "{{ service_name }}"
+    state: restarted
+
+- name: Run pg_lsclusters to get cluster information
+  command: pg_lsclusters
+  register: pg_clusters_output
+
+- name: Parse the output to get the port
+  set_fact:
+    pg_port: "{{ item.split()[2] | int }}" 
+  loop: "{{ pg_clusters_output.stdout_lines }}"
+  when: "cluster_name in item"
+
+- name: Test PG port value
+  ansible.builtin.debug:
+    msg: "Test port: {{ pg_port }}"
+
+- name: Set PostgreSQL configuration options
+  community.postgresql.postgresql_set:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    login_host: 127.0.0.1
+    login_user: postgres
+    login_port: "{{ pg_port }}"
+#    login_unix_socket: "/var/run/postgresql/.s.PGSQL.5440"
+#  environment:
+#    PGPORT: "{{ pg_port }}"
+  loop: "{{ config_settings | dict2items }}"
+  become: true
+  become_user: postgres
+
+- name: Test PostgreSQL health
+  community.postgresql.postgresql_query:
+    login_host: 127.0.0.1
+    login_user: postgres
+    login_port: "{{ pg_port }}"
+    db: postgres
+    query: "SELECT 1 as Result"    
+  become: true
+  become_user: postgres
+  register: Records
+
+- name: Get Result
+  set_fact:
+    Result: "{{ Records.query_result[0].result }}"
+
+- name: Display PostgreSQL state
+  ansible.builtin.debug:
+    msg: "PostgreSQL query returned: {{ Result }}"
+      
+- name: Stop playbook execution if PostgreSQL does not return 1
+  fail:
+    msg: "PostgreSQL health check failed {{ Result }}"
+  when: Result | int != 1
+
+- name: Ask PostgreSQL about its data_directory
+  community.postgresql.postgresql_query:
+    login_host: 127.0.0.1
+    login_user: postgres
+    login_port: "{{ pg_port }}"
+    db: postgres
+    query: "SHOW data_directory;"
+  become: true
+  become_user: postgres
+  register: Records
+
+- name: Get Result
+  set_fact:
+    Result: "{{ Records.query_result[0] }}"
+
+- name: Display PostgreSQL data_directory
+  ansible.builtin.debug:
+    msg: "PostgreSQL query returned: {{ Result }}"
+
+- name: Create new databases
+  community.postgresql.postgresql_db:
+    login_host: 127.0.0.1
+    login_user: postgres
+    login_port: "{{ pg_port }}"  
+    name: "{{ item }}"
+  loop: "{{ databases }}"
+  become: true
+  become_user: postgres  
+  
+- name: Create new users
+  community.postgresql.postgresql_user:
+    login_host: 127.0.0.1
+    login_user: postgres
+    login_port: "{{ pg_port }}"
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    state: present
+  loop: "{{ users }}"
+  become: true
+  become_user: postgres  
+  
+
+- name: Remove the temporary HBA rule
+  community.postgresql.postgresql_pg_hba:
+    dest: "{{ config_dir }}/pg_hba.conf"
+    contype: host
+    databases: all
+    users: all
+    source: 0.0.0.0/0 
+    method: trust     
+    state: absent
+
+- name: Restart new PostgreSQL systemd service to apply recently changed options
+  systemd: 
+    name: "{{ service_name }}"
+    state: restarted
+
+- name: Install Prometheus exporter
+  ansible.builtin.include_role:
+    name: prometheus.prometheus.postgres_exporter
+
+#- name: Iteration test1
+#  ansible.builtin.debug:
+#    msg: "{{ item.key }} - {{ item.value }}"
+#  loop: "{{ config | dict2items }}"
+
+#- name: Iteration test2
+#  ansible.builtin.debug:
+#    msg: "{{ item }}"
+#  loop: "{{ hba_rules }}"
+
+#- name: Iteration test3
+#  ansible.builtin.debug:
+#    msg: "{{ item }}"
+#  loop: "{{ databases }}"  
